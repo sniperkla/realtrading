@@ -9,7 +9,7 @@ const Log = new Schema(
     price: { type: String },
     takeProfit: { type: Object },
     time: { type: Date, default: Date.now },
-    binanceTakeProfit: { type: Object },
+    binanceTakeProfit1: { type: Object },
     binanceTakeProfit2: { type: Object },
     binanceTakeProfit3: { type: Object },
     binanceTakeProfit4: { type: Object },

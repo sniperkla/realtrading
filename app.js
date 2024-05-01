@@ -12,7 +12,6 @@ const callLeverage = require('./lib/calLeverage')
 const realEnvironment = require('./lib/realEnv')
 const combine = require('./lib/combineUser')
 const updateMarketCounter = require('./lib/checkMarketCounter')
-const checkCloseOrder = require('./lib/checkCloseOrder')
 const get = combine.combineUser()
 const cron = require('node-cron')
 const cronJub = require('./lib/cronJob')
@@ -36,11 +35,12 @@ mongoose
 let bodyq = null
 app.get('/getbinance', async (req, res) => {
   try {
+    //test
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
 
-const schedule = '*/7 * * * *'
+const schedule = '*/3 * * * *'
 
 const doSomething = async () => {
   await cronJub.checkTakeProfit4Step()
@@ -92,11 +92,7 @@ app.post('/gettrading', async (req, res) => {
     const limitMarket = 6
     bodyq = req.body
     let body = await checkDataFirst(bodyq)
-    // await checkCloseOrder.checkCloseOrder(
-    //   body.symbol,
-    //   get.API_KEY[0],
-    //   get.SECRET_KEY[0]
-    // )
+
     if (body.type === 'MARKET') {
       const checkLimitMarket = await updateMarketCounter.incCounter()
       if (checkLimitMarket <= limitMarket) {
