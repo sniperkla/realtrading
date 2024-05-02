@@ -74,7 +74,7 @@ app.post(`/tpmanual_${pathName}`, async (req, res) => {
         msg: `${symbol} : (Manual Update) TaketProfit สำเร็จ , เลื่อน : ${takeprofit} / QTY : ${quantity2}`
       }
       await lineNotifyPost.postLineNotify(buyit)
-      const test = await manualCheck.checkTakeProfitDB(symbol)
+      const test = await manualCheck.checkTakeProfitDB(symbol, tpManual.data)
       console.log('test', test.msg)
     } else {
       const buyit = {
