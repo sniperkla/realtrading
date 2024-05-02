@@ -15,6 +15,7 @@ const updateMarketCounter = require('./lib/checkMarketCounter')
 const get = combine.combineUser()
 const cron = require('node-cron')
 const cronJub = require('./lib/cronJob')
+const manualCheck = require('./lib/manualCheckTakeProfit')
 
 require('dotenv').config()
 
@@ -73,6 +74,8 @@ app.post(`/tpmanual_${pathName}`, async (req, res) => {
         msg: `${symbol} : (Manual Update) TaketProfit สำเร็จ , เลื่อน : ${takeprofit} / QTY : ${quantity2}`
       }
       await lineNotifyPost.postLineNotify(buyit)
+      const test = await manualCheck.checkTakeProfitDB(symbol)
+      console.log('test', test.msg)
     } else {
       const buyit = {
         symbol: symbol,
@@ -285,11 +288,17 @@ const checkStopLoss = async (body) => {
           { symbol: symbol },
           { $set: { binanceStopLoss: data.data } }
         )
+        const getAccountInfo = await apiBinance.getAccountInfo(
+          get.API_KEY[0],
+          get.SECRET_KEY[0]
+        )
+        const unPNL = getAccountInfo.totalUnrealizedProfit
+        const margin = getAccountInfo.totalMarginBalance
         const buyit = {
           symbol: symbol,
           text: 'updatestoploss',
           type: type,
-          msg: `${symbol} : อัพเดท stoploss สำเร็จ , เลื่อน stopLoss : ${stopPrice}`
+          msg: `${symbol} : อัพเดท stoploss สำเร็จ , เลื่อน stopLoss : ${stopPrice} | คงเหลือ :${margin} , กำไรทิพย์ : ${unPNL}`
         }
         await lineNotifyPost.postLineNotify(buyit)
       } else if (data.status !== 200 && checkMarket) {
