@@ -108,7 +108,7 @@ app.post('/gettrading', async (req, res) => {
             item.type === 'TAKE_PROFIT_MARKET' && item.closePosition === true
           )
         })
-        if (checkOpenOrder?.length < 30) {
+        if (checkOpenOrder?.length < 100) {
           const checkMarketFirst = await Log.findOne({ symbol: body.symbol })
           if (checkMarketFirst === null) {
             const calLeverage = await callLeverage.leverageCal(
