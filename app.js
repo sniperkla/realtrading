@@ -92,7 +92,7 @@ app.post(`/tpmanual_${pathName}`, async (req, res) => {
 })
 app.post('/gettrading', async (req, res) => {
   try {
-    const limitMarket = 6
+    const limitMarket = 1000
     bodyq = req.body
     let body = await checkDataFirst(bodyq)
 
@@ -162,11 +162,11 @@ app.post('/gettrading', async (req, res) => {
           msg: `กำลังคำนวณ Market เหลืออีก ${checkLimitMarket} Quene`
         }
         await lineNotifyPost.postLineNotify(buyit)
+        await updateMarketCounter.deleteCounter()
       }
     } else {
       await checkCondition(body, res)
     }
-
     return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
   } catch (error) {}
 })
