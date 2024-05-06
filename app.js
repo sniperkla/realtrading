@@ -41,7 +41,7 @@ app.get('/getbinance', async (req, res) => {
   } catch (error) {}
 })
 
-const schedule = '*/7 * * * *'
+const schedule = '*/3 * * * *'
 
 const doSomething = async () => {
   await cronJub.checkTakeProfit4Step()
