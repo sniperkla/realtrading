@@ -54,8 +54,9 @@ task.start()
 app.post(`/tpmanual_${pathName}`, async (req, res) => {
   try {
     const body = req.body
-    const { symbol, side, quantity, takeprofit } = body
+    const { symbol, side, quantity, takeprofit, closePosition } = body
     const quantity2 = parseFloat(quantity)
+    const closePositions = closePosition || false
     const takeprofit2 = parseFloat(takeprofit)
     const tpManual = await apiBinance.manualTakeProfit(
       symbol,
@@ -64,7 +65,8 @@ app.post(`/tpmanual_${pathName}`, async (req, res) => {
       true,
       takeprofit2,
       get.API_KEY[0],
-      get.SECRET_KEY[0]
+      get.SECRET_KEY[0],
+      closePositions
     )
 
     if (tpManual.status === 200) {
