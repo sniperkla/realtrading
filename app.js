@@ -94,13 +94,13 @@ app.post(`/tpmanual_${pathName}`, async (req, res) => {
 })
 app.post('/gettrading', async (req, res) => {
   try {
-    const limitMarket = 1000
+    const limitMarket = 0
     bodyq = req.body
     let body = await checkDataFirst(bodyq)
 
     if (body.type === 'MARKET') {
       const checkLimitMarket = await updateMarketCounter.incCounter()
-      if (checkLimitMarket <= limitMarket) {
+      if (checkLimitMarket < limitMarket) {
         const getAllOpenOrder = await apiBinance.getAllOpenOrder(
           get.API_KEY[0],
           get.SECRET_KEY[0]
