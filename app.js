@@ -24,9 +24,8 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
 const mongoose = require('mongoose')
-const trading = require('./model/trading')
-// const connectionString = 'mongodb://admin:AaBb1234!@27.254.144.100/trading'
-const connectionString = 'mongodb://localhost:27017/trading'
+const connectionString = 'mongodb://admin:AaBb1234!@27.254.144.100/trading'
+// const connectionString = 'mongodb://localhost:27017/trading'
 const pathName = process.env.NAME
 mongoose
   .connect(connectionString, {
@@ -37,56 +36,6 @@ mongoose
 let bodyq = null
 app.get('/getbinance', async (req, res) => {
   try {
-    const log = await Log.find()
-    const apiKey = process.env.APIKEY
-    const secretKey = process.env.SECRETKEY
-
-    const symbol = log.map((item) => {
-      return item.symbol
-    })
-
-    for (let i = 0; i <= symbol.length; i++) {
-      const checkMarket = await Log.findOne({
-        symbol: symbol[i]
-      })
-
-      const getPrice = await apiBinance.getPrice(symbol[i], apiKey, secretKey)
-
-      const checkTakeprofitZone = checkMarket.takeProfitZone
-
-      if (checkMarket) {
-
-
-
-
-        await Log.findOneAndUpdate(
-          { symbol: 'BTCUSDT' },
-          { $unset: { binanceStopLoss: '' } }
-        )
-        const data = await apiBinance.postBinannce(
-          symbol[i],
-          side,
-          null,
-          'STOP_MARKET',
-          marketPrice,
-          true,
-          null,
-          apiKey,
-          secretKey
-        )
-
-        const updated = await Log.updateOne(
-          { symbol: symbol },
-          { $set: { binanceStopLoss: data } }
-        )
-
-        await Log.findOneAndUpdate(
-          { symbol: 'BTCUSDT' },
-          { $unset: { [names]: '' } }
-        )
-      }
-    }
-
     //test
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
@@ -96,6 +45,7 @@ const schedule = '*/3 * * * *'
 
 const doSomething = async () => {
   await cronJub.checkTakeProfit4Step()
+  await cronJub.checkStopLoss4Step()
 }
 
 const task = cron.schedule(schedule, doSomething)
