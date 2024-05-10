@@ -46,7 +46,7 @@ const schedule = '*/3 * * * *'
 const doSomething = async () => {
   await cronJub.checkStopLoss4Step()
 
-  //await cronJub.checkTakeProfit4Step()
+  await cronJub.checkTakeProfit4Step()
 }
 
 const task = cron.schedule(schedule, doSomething)
