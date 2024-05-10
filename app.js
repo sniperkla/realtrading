@@ -237,7 +237,10 @@ const checkCondition = async (
       }
       await realEnvironment.buyingBinance(en)
       // }
-    } else if (body.type === 'STOP_MARKET' && checkLog.lockStopLoss === false) {
+    } else if (
+      body.type === 'STOP_MARKET' &&
+      checkLog.lockStopLoss.lock === false
+    ) {
       await checkStopLoss(body)
     }
 

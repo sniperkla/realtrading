@@ -16,7 +16,10 @@ const Log = new Schema(
     binanceMarket: { type: Object },
     binanceStopLoss: { type: Object },
     takeProfitZone: { type: Object },
-    lockStopLoss: { type: Boolean, default: false }
+    lockStopLoss: {
+      type: Object,
+      default: { lock: false, zone1: false, zone2: false, zone3: false }
+    }
   },
   {
     timestamps: true
