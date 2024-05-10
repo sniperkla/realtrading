@@ -41,7 +41,9 @@ app.get('/getbinance', async (req, res) => {
   } catch (error) {}
 })
 
-const schedule = '*/3 * * * *'
+// const schedule = '*/3 * * * *'  3 min
+
+const schedule = '*/40 * * * * *'
 
 const doSomething = async () => {
   await cronJub.checkStopLoss4Step()
