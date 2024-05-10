@@ -41,19 +41,21 @@ app.get('/getbinance', async (req, res) => {
   } catch (error) {}
 })
 
-// const schedule = '*/3 * * * *'  3 min
+const scheduleForakeProfit4Step = '*/3 * * * *'
+const scheduleForStopLoss4Step = '*/40 * * * * *'
 
-const schedule = '*/40 * * * * *'
-
-const doSomething = async () => {
+const doCheckStopLoss4Step = async () => {
   await cronJub.checkStopLoss4Step()
-
+}
+const doCheckTakeProfit4Step = async () => {
   await cronJub.checkTakeProfit4Step()
 }
 
-const task = cron.schedule(schedule, doSomething)
+const task1 = cron.schedule(scheduleForStopLoss4Step, doCheckStopLoss4Step)
+const task2 = cron.schedule(scheduleForakeProfit4Step, doCheckTakeProfit4Step)
 
-task.start()
+task1.start()
+task2.start()
 
 app.post(`/tpmanual_${pathName}`, async (req, res) => {
   try {
