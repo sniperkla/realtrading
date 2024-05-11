@@ -56,6 +56,71 @@ const task2 = cron.schedule(scheduleForakeProfit4Step, doCheckTakeProfit4Step)
 
 task1.start()
 task2.start()
+app.post(`/slmanual_${pathName}`, async (req, res) => {
+  try {
+    const body = req.body
+    const { symbol, side, stopPrice, zone } = body
+
+    const marketPrice = await Trading.findOne({ symbol: symbol })
+
+    if (side === 'SELL') {
+      if (zone === 25) {
+        const marketSide = parseFloat(marketPrice?.priceCal * 0.007)
+        stopPrice = parseFloat(marketPrice?.priceCal + marketSide)
+      }
+    } else if (side === 'BUY') {
+      if (zone === 25) {
+        const marketSide = parseFloat(marketPrice?.priceCal * 0.007)
+        stopPrice = parseFloat(marketPrice?.priceCal - marketSide)
+      }
+    }
+
+    const slManual = await apiBinance.manualStoplossZone(
+      symbol,
+      side,
+      stopPrice,
+      zone,
+      true,
+      get.API_KEY[0],
+      get.SECRET_KEY[0]
+    )
+
+    if (tpManual.status === 200) {
+      const buyit = {
+        symbol: symbol,
+        text: 'updatestoploss',
+        msg: `${symbol} : (Manual Update) StopLossZone${zone} สำเร็จ , เลื่อน : ${stopPrice} `
+      }
+      await lineNotifyPost.postLineNotify(buyit)
+      const test = await manualCheck.checkStopLossZone(
+        symbol,
+        stopPrice,
+        zone,
+        slManual.data
+      )
+    } else {
+      const buyit = {
+        symbol: symbol,
+        type: 'LIMIT',
+        text: 'error',
+        msg: slManual.data.msg
+      }
+      await lineNotifyPost.postLineNotify(buyit)
+    }
+    const checkMarket = await Log.findOne({
+      symbol: symbol
+    })
+    const cancleOrderStopLoss = await apiBinance?.cancleOrder(
+      symbol,
+      checkMarket?.binanceStopLoss?.orderId,
+      get.API_KEY[0],
+      get.SECRET_KEY[0]
+    )
+    return res
+      .status(HTTPStatus.OK)
+      .json({ success: true, msg: tpManual.status || 'Something Error' })
+  } catch (error) {}
+})
 
 app.post(`/tpmanual_${pathName}`, async (req, res) => {
   try {
