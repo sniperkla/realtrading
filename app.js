@@ -15,6 +15,8 @@ const updateMarketCounter = require('./lib/checkMarketCounter')
 const get = combine.combineUser()
 const cron = require('node-cron')
 const cronJub = require('./lib/cronJob')
+const checkStoploss1h = require('./lib/checkStoploss1h')
+
 const manualCheck = require('./lib/manualCheckTakeProfit')
 
 require('dotenv').config()
@@ -311,6 +313,11 @@ const checkCondition = async (
       checkLog.lockStopLoss.lock === false
     ) {
       await checkStopLoss(body)
+    } else if (
+      body.type === 'STOP_MARKET' &&
+      checkLog.lockStopLoss.lock === true
+    ) {
+      await checkStoploss1h(body, get.API_KEY[0], get.SECRET_KEY[0])
     }
 
     return res.status(HTTPStatus.OK).json({ success: true, data: 'ไม่ๆๆๆ' })
@@ -475,24 +482,6 @@ const checkStopLoss = async (body) => {
       }
     }
   } catch (error) {}
-}
-
-const lineNotify = (body) => {
-  const now = new Date()
-  const hours = now.getHours()
-  const minutes = now.getMinutes()
-  const seconds = now.getSeconds()
-
-  const buyit = {
-    symbol: body.symbol,
-    side: body.side,
-    type: body.type,
-    price: body.priceCal,
-    takeProfit: body.takeProfit,
-    stopPrice: body.stopPrice,
-    time: `${hours}:${minutes}:${seconds}`
-  }
-  return buyit
 }
 
 const checkMarketBody = (body) => {
