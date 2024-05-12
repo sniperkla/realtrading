@@ -384,40 +384,6 @@ const checkStopLoss = async (body) => {
           msg: `${symbol} : อัพเดท stoploss สำเร็จ , เลื่อน stopLoss : ${stopPrice} | คงเหลือ :${margin} , กำไรทิพย์ : ${unPNL}`
         }
         await lineNotifyPost.postLineNotify(buyit)
-      } else if (data.status !== 200 && checkMarket) {
-        if (data.data.msg.search('recvWindow')) {
-          const data = await apiBinance.postBinannce(
-            symbol,
-            side,
-            qty,
-            type,
-            stopPrice,
-            status,
-            'takeprofit',
-            get.API_KEY[0],
-            get.SECRET_KEY[0]
-          )
-          if (data.status === 200) {
-            const updated = await Log.updateOne(
-              { symbol: symbol },
-              { $set: { binanceStopLoss: data.data } }
-            )
-            const buyit = {
-              symbol: symbol,
-              text: 'updatestoploss',
-              type: type,
-              msg: `${symbol} :(RE) อัพเดท stoploss สำเร็จ , เลื่อน : ${stopPrice}`
-            }
-            await lineNotifyPost.postLineNotify(buyit)
-          }
-        }
-        const buyit = {
-          symbol: symbol,
-          text: 'error',
-          type: type,
-          msg: data.data.msg
-        }
-        await lineNotifyPost.postLineNotify(buyit)
       }
     } else if (checkMarket !== null && check === null) {
       const data = await apiBinance.postBinannce(
@@ -443,40 +409,6 @@ const checkStopLoss = async (body) => {
           text: 'updatestoploss',
           type: type,
           msg: `${symbol} : อัพเดท stoploss สำเร็จ , เลื่อน : ${stopPrice}`
-        }
-        await lineNotifyPost.postLineNotify(buyit)
-      } else {
-        if (data.data.msg.search('recvWindow')) {
-          const data = await apiBinance.postBinannce(
-            symbol,
-            side,
-            qty,
-            type,
-            stopPrice,
-            status,
-            'takeprofit',
-            get.API_KEY[0],
-            get.SECRET_KEY[0]
-          )
-          if (data.status === 200) {
-            const updated = await Log.updateOne(
-              { symbol: symbol },
-              { $set: { binanceStopLoss: data.data } }
-            )
-            const buyit = {
-              symbol: symbol,
-              text: 'updatestoploss',
-              type: type,
-              msg: `${symbol} :(RE) อัพเดท stoploss สำเร็จ , เลื่อน : ${stopPrice}`
-            }
-            await lineNotifyPost.postLineNotify(buyit)
-          }
-        }
-        const buyit = {
-          symbol: symbol,
-          text: 'error',
-          type: type,
-          msg: data.data.msg
         }
         await lineNotifyPost.postLineNotify(buyit)
       }
