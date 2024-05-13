@@ -26,9 +26,10 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
 const mongoose = require('mongoose')
-const connectionString = 'mongodb://admin:AaBb1234!@27.254.144.100/trading'
 // const connectionString = 'mongodb://localhost:27017/trading'
 const pathName = process.env.NAME
+const connectionString = `${process.env.DB + pathName}`
+
 mongoose
   .connect(connectionString, {
     useNewUrlParser: true
@@ -36,9 +37,8 @@ mongoose
   .then(() => console.log('MongoDB connected successfully'))
   .catch((err) => console.error('Error connecting to MongoDB:', err))
 let bodyq = null
-app.get('/getbinance', async (req, res) => {
+app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
-    //test
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
@@ -166,7 +166,7 @@ app.post(`/tpmanual_${pathName}`, async (req, res) => {
       .json({ success: true, msg: tpManual.status || 'Something Error' })
   } catch (error) {}
 })
-app.post('/gettrading', async (req, res) => {
+app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
     const limitMarket = 1000
     bodyq = req.body
