@@ -58,6 +58,7 @@ const task2 = cron.schedule(scheduleForakeProfit4Step, doCheckTakeProfit4Step)
 
 task1.start()
 task2.start()
+
 app.post(`/slmanual_${pathName}`, async (req, res) => {
   try {
     const body = req.body
