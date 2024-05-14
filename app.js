@@ -383,7 +383,7 @@ const checkStopLoss = async (body) => {
           symbol: symbol,
           text: 'updatestoploss',
           type: type,
-          msg: `🟠 ${symbol} : อัพเดท stoploss สำเร็จ , 🟡 เลื่อน stopLoss : ${stopPrice} | 💰 คงเหลือ :${margin} , 💸 กำไรทิพย์ : ${unPNL} 🟠`
+          msg: `✅ ${symbol} : อัพเดท stoploss สำเร็จ \n🟡 เลื่อน stopLoss : ${stopPrice} \n💰 คงเหลือ :${margin} 💸 กำไรทิพย์ : ${unPNL}`
         }
         await lineNotifyPost.postLineNotify(buyit)
       }
