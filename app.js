@@ -1,7 +1,7 @@
 const express = require('express')
 const HTTPStatus = require('http-status')
 const app = express()
-const port = 3001
+const port = 3030
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const Trading = require('./model/trading')
@@ -39,6 +39,7 @@ let bodyq = null
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
     //test
+    console.log('ur here')
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
@@ -382,7 +383,7 @@ const checkStopLoss = async (body) => {
           symbol: symbol,
           text: 'updatestoploss',
           type: type,
-          msg: `${symbol} : อัพเดท stoploss สำเร็จ , เลื่อน stopLoss : ${stopPrice} | คงเหลือ :${margin} , กำไรทิพย์ : ${unPNL}`
+          msg: `🟠 ${symbol} : อัพเดท stoploss สำเร็จ , 🟡 เลื่อน stopLoss : ${stopPrice} | 💰 คงเหลือ :${margin} , 💸 กำไรทิพย์ : ${unPNL} 🟠`
         }
         await lineNotifyPost.postLineNotify(buyit)
       }
