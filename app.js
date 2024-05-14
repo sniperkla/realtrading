@@ -1,7 +1,7 @@
 const express = require('express')
 const HTTPStatus = require('http-status')
 const app = express()
-const port =  3020
+const port = 3020
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const Trading = require('./model/trading')
@@ -382,7 +382,7 @@ const checkStopLoss = async (body) => {
           symbol: symbol,
           text: 'updatestoploss',
           type: type,
-          msg: `${symbol} : อัพเดท stoploss สำเร็จ , เลื่อน stopLoss : ${stopPrice} | คงเหลือ :${margin} , กำไรทิพย์ : ${unPNL}`
+          msg: `✅ ${symbol} : อัพเดท stoploss สำเร็จ \n🟡 เลื่อน stopLoss : ${stopPrice} \n💰 คงเหลือ :${margin} 💸 กำไรทิพย์ : ${unPNL}`
         }
         await lineNotifyPost.postLineNotify(buyit)
       }
