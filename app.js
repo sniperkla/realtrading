@@ -172,7 +172,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
     bodyq = req.body
     let body = await checkDataFirst(bodyq)
 
-    if (body.type === 'MARKET') {
+    if (body.type === 'MARKET' && !bodyq?.version) {
       const checkLimitMarket = await updateMarketCounter.incCounter()
       if (checkLimitMarket <= limitMarket) {
         const getAllOpenOrder = await apiBinance.getAllOpenOrder(
