@@ -11,13 +11,11 @@ const apiBinance = require('./lib/apibinance')
 const callLeverage = require('./lib/calLeverage')
 const realEnvironment = require('./lib/realEnv')
 const combine = require('./lib/combineUser')
+const reverse = require('./lib/reverseSide')
+const checkConditionOBOS = require('./lib/checkCondition')
+
 const updateMarketCounter = require('./lib/checkMarketCounter')
 const get = combine.combineUser()
-const cron = require('node-cron')
-const cronJub = require('./lib/cronJob')
-const checkStoploss1h = require('./lib/checkStoploss1h')
-
-const manualCheck = require('./lib/manualCheckTakeProfit')
 
 require('dotenv').config()
 
@@ -39,141 +37,33 @@ let bodyq = null
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
     //test
-    console.log('ur here')
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
 
-const scheduleForakeProfit4Step = '*/7 * * * *'
-const scheduleForStopLoss4Step = '*/40 * * * * *'
-
-const doCheckStopLoss4Step = async () => {
-  await cronJub.checkStopLoss4Step()
-}
-const doCheckTakeProfit4Step = async () => {
-  await cronJub.checkTakeProfit4Step()
-}
-
-const task1 = cron.schedule(scheduleForStopLoss4Step, doCheckStopLoss4Step)
-const task2 = cron.schedule(scheduleForakeProfit4Step, doCheckTakeProfit4Step)
-
-task1.start()
-task2.start()
-
-app.post(`/slmanual_${pathName}`, async (req, res) => {
-  try {
-    const body = req.body
-    const { symbol, side, stopPrice, zone } = body
-
-    const marketPrice = await Trading.findOne({ symbol: symbol })
-
-    if (side === 'SELL') {
-      if (zone === 25) {
-        const marketSide = parseFloat(marketPrice?.priceCal * 0.007)
-        stopPrice = parseFloat(marketPrice?.priceCal + marketSide)
-      }
-    } else if (side === 'BUY') {
-      if (zone === 25) {
-        const marketSide = parseFloat(marketPrice?.priceCal * 0.007)
-        stopPrice = parseFloat(marketPrice?.priceCal - marketSide)
-      }
-    }
-
-    const slManual = await apiBinance.manualStoplossZone(
-      symbol,
-      side,
-      stopPrice,
-      zone,
-      true,
-      get.API_KEY[0],
-      get.SECRET_KEY[0]
-    )
-
-    if (tpManual.status === 200) {
-      const buyit = {
-        symbol: symbol,
-        text: 'updatestoploss',
-        msg: `${symbol} : (Manual Update) StopLossZone${zone} สำเร็จ , เลื่อน : ${stopPrice} `
-      }
-      await lineNotifyPost.postLineNotify(buyit)
-      const test = await manualCheck.checkStopLossZone(
-        symbol,
-        stopPrice,
-        zone,
-        slManual.data
-      )
-    } else {
-      const buyit = {
-        symbol: symbol,
-        type: 'LIMIT',
-        text: 'error',
-        msg: slManual.data.msg
-      }
-      await lineNotifyPost.postLineNotify(buyit)
-    }
-    const checkMarket = await Log.findOne({
-      symbol: symbol
-    })
-    const cancleOrderStopLoss = await apiBinance?.cancleOrder(
-      symbol,
-      checkMarket?.binanceStopLoss?.orderId,
-      get.API_KEY[0],
-      get.SECRET_KEY[0]
-    )
-    return res
-      .status(HTTPStatus.OK)
-      .json({ success: true, msg: tpManual.status || 'Something Error' })
-  } catch (error) {}
-})
-
-app.post(`/tpmanual_${pathName}`, async (req, res) => {
-  try {
-    const body = req.body
-    const { symbol, side, quantity, takeprofit, closePosition } = body
-    const quantity2 = parseFloat(quantity)
-    const closePositions = closePosition || false
-    const takeprofit2 = parseFloat(takeprofit)
-    const tpManual = await apiBinance.manualTakeProfit(
-      symbol,
-      side,
-      quantity2,
-      true,
-      takeprofit2,
-      get.API_KEY[0],
-      get.SECRET_KEY[0],
-      closePositions
-    )
-
-    if (tpManual.status === 200) {
-      const buyit = {
-        symbol: symbol,
-        text: 'takeprofit',
-        msg: `${symbol} : (Manual Update) TaketProfit สำเร็จ , เลื่อน : ${takeprofit} / QTY : ${quantity2}`
-      }
-      await lineNotifyPost.postLineNotify(buyit)
-      const test = await manualCheck.checkTakeProfitDB(symbol, tpManual.data)
-      console.log('test', test.msg)
-    } else {
-      const buyit = {
-        symbol: symbol,
-        type: 'LIMIT',
-        text: 'error',
-        msg: tpManual.data.msg
-      }
-      await lineNotifyPost.postLineNotify(buyit)
-    }
-    return res
-      .status(HTTPStatus.OK)
-      .json({ success: true, msg: tpManual.status || 'Something Error' })
-  } catch (error) {}
-})
 app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
     const limitMarket = 1000
     bodyq = req.body
+
     let body = await checkDataFirst(bodyq)
 
-    if (body.type === 'MARKET') {
+    if (body?.type === 'MARKET' && bodyq?.version === 'v3') {
+      const checkMarketFirst = await Log.findOne({ symbol: body.symbol })
+
+      if (checkMarketFirst?.side === body.side) {
+        console.log('do nithing')
+        return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
+      } else if (checkMarketFirst?.side !== body.side && checkMarketFirst) {
+        await reverse.reverseSide(
+          body,
+          body.side,
+          get.API_KEY[0],
+          get.SECRET_KEY[0]
+        )
+        return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
+      }
+
       const checkLimitMarket = await updateMarketCounter.incCounter()
       if (checkLimitMarket <= limitMarket) {
         const getAllOpenOrder = await apiBinance.getAllOpenOrder(
@@ -242,7 +132,12 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
         await updateMarketCounter.deleteCounter()
       }
     } else {
-      await checkCondition(body, res)
+      await checkConditionOBOS.checkConditionOBOS(
+        body,
+        res,
+        get.API_KEY[0],
+        get.SECRET_KEY[0]
+      )
     }
     return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
   } catch (error) {}
@@ -310,17 +205,13 @@ const checkCondition = async (
       }
       await realEnvironment.buyingBinance(en)
       // }
-    } else if (
-      body.type === 'STOP_MARKET' &&
-      checkLog.lockStopLoss.lock === false
-    ) {
-      await checkStopLoss(body)
-    } else if (
-      body.type === 'STOP_MARKET' &&
-      checkLog.lockStopLoss.lock === true
-    ) {
-      await checkStoploss1h(body, get.API_KEY[0], get.SECRET_KEY[0])
     }
+
+    // } else if (
+    //   body.type === 'STOP_MARKET' && body.version ==='v3'
+    // ) {
+    //   await checkStopLoss(body)
+    // }
 
     return res.status(HTTPStatus.OK).json({ success: true, data: 'ไม่ๆๆๆ' })
   } catch (error) {}
@@ -421,20 +312,14 @@ const checkStopLoss = async (body) => {
 const checkMarketBody = (body) => {
   let real = {}
 
-  const filteredBody = body.filter((item) => item.hasOwnProperty('takeprofit'))
-
   real = {
-    type: body[0].type,
-    side: body[0].side,
-    symbol: body[0].symbol,
-    takeProfit: {
-      ...filteredBody[0],
-      takeprofit: parseFloat(filteredBody[0].takeprofit)
-    },
-    priceCal: parseFloat(body[0].priceCal),
-    stopPriceCal: parseFloat(body[0].stopPriceCal)
+    type: body.type,
+    version: body.type,
+    side: body.side,
+    symbol: body.symbol,
+    priceCal: parseFloat(body.priceCal),
+    stopPriceCal: parseFloat(body.stopPriceCal)
   }
-
   return real
 }
 
@@ -453,11 +338,8 @@ const checkStopLossBody = (bodyq) => {
 }
 
 const checkDataFirst = async (bodyq) => {
-  if (bodyq[0]?.type === 'MARKET') {
-    const modifiedBody = bodyq.map((item) => ({
-      ...item,
-      symbol: item.symbol.replace(/\.P$/, '')
-    }))
+  if (bodyq.type === 'MARKET') {
+    const modifiedBody = { ...bodyq, symbol: bodyq.symbol.replace(/\.P$/, '') }
 
     const bodyMarket = checkMarketBody(modifiedBody)
 
@@ -487,6 +369,13 @@ const checkDataFirst = async (bodyq) => {
     const bodyStopLoss = checkStopLossBody(body)
 
     return bodyStopLoss
+  } else {
+    let body = {
+      ...bodyq,
+      symbol: bodyq.symbol.replace(/\.P$/, '')
+    }
+
+    return body
   }
 }
 
