@@ -13,6 +13,8 @@ const realEnvironment = require('./lib/realEnv')
 const combine = require('./lib/combineUser')
 const reverse = require('./lib/reverseSide')
 const checkConditionOBOS = require('./lib/checkCondition')
+const cron = require('node-cron')
+const cronJub = require('./lib/cronJob')
 
 const updateMarketCounter = require('./lib/checkMarketCounter')
 const get = combine.combineUser()
@@ -40,6 +42,16 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
+
+const scheduleForakeProfit4Step = '*/40 * * * * *'
+
+const doCheckTakeProfit4Step = async () => {
+  await cronJub.checkTakeProfit4Step()
+}
+
+const task1 = cron.schedule(scheduleForakeProfit4Step, doCheckTakeProfit4Step)
+
+task1.start()
 
 app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
