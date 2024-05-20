@@ -62,7 +62,6 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
 
     if (body?.type === 'MARKET' && bodyq?.version === 'v3') {
       const checkMarketFirst = await Log.findOne({ symbol: body.symbol })
-
       if (checkMarketFirst?.side === body.side) {
         console.log('do nithing')
         return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
