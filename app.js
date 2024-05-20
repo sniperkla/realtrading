@@ -75,7 +75,6 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
         )
         return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
       }
-
       const checkLimitMarket = await updateMarketCounter.incCounter()
       if (checkLimitMarket <= limitMarket) {
         const getAllOpenOrder = await apiBinance.getAllOpenOrder(
