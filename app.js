@@ -38,8 +38,6 @@ mongoose
 let bodyq = null
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
-    
-
     //test
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
@@ -61,6 +59,11 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
     bodyq = req.body
 
     let body = await checkDataFirst(bodyq)
+    console.log('body', body)
+
+    if (body.type === 'STOP_MARKET' && bodyq?.version === 'v3') {
+      await checkStopLoss(body)
+    }
 
     if (body?.type === 'MARKET' && bodyq?.version === 'v3') {
       const checkMarketFirst = await Log.findOne({ symbol: body.symbol })
@@ -218,10 +221,7 @@ const checkCondition = async (
       await realEnvironment.buyingBinance(en)
       // }
     }
-
-    // } else if (
-    //   body.type === 'STOP_MARKET' && body.version ==='v3'
-    // ) {
+    // } else if (body.type === 'STOP_MARKET' && body.version === 'v3') {
     //   await checkStopLoss(body)
     // }
 
