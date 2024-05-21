@@ -38,6 +38,8 @@ mongoose
 let bodyq = null
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
+    
+
     //test
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
