@@ -27,10 +27,7 @@ const Log = new Schema(
         zone1: false,
         zone2: false,
         zone3: false,
-        zone4: false,
-        zone5: false,
-        zone6: false,
-        zone7: false
+        zone4: false
       }
     }
   },
