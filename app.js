@@ -99,24 +99,22 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
         await mainCalLeverage(body, res)
       } else if (!checkSmcp) {
         const pearson = await Pearson.findOne({ symbol: body.symbol })
-
         if (
           (pearson?.BTP >= 0 && bodyq.side === 'BUY') ||
           (pearson?.BTP <= 0 && bodyq.side === 'SELL')
         ) {
           const buyit = {
-            symbol: symbol,
+            symbol: body.symbol,
             text: 'initpearson',
-            msg: `มีการสั่งซื้อ Market ${symbol} เข้าเงื่อนไข Pearson : ${pearson?.BTP}`
+            msg: `มีการสั่งซื้อ Market ${body.symbol} เข้าเงื่อนไข Pearson : ${pearson?.BTP}`
           }
           await lineNotifyPost.postLineNotify(buyit)
           await mainCalLeverage(body, res)
         } else {
           const buyit = {
-            symbol: symbol,
+            symbol: body.symbol,
             text: 'donotbuying',
-            type: type,
-            msg: `❌ ${symbol} ไม่มีการสั่งซื้อ ไม่เข้าเงื่อนไข BTP และ SMCP`
+            msg: `❌ ${body.symbol} ไม่มีการสั่งซื้อ ไม่เข้าเงื่อนไข BTP และ SMCP`
           }
           await lineNotifyPost.postLineNotify(buyit)
         }
