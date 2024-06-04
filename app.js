@@ -71,7 +71,8 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
     if (body.SMCP) {
       await smcpChecker.smcpCheck(body, get.API_KEY[0], get.SECRET_KEY[0], res)
     }
-    if (body.BTP || body.STP) {
+    // if (body.BTP || body.STP) {
+    if (body.BTP) {
       await pearsonsChecker.pearsonChecker(
         body,
         get.API_KEY[0],
