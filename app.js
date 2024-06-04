@@ -88,16 +88,18 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
       const checkSmcp = await Smcp.findOne({ symbol: body.symbol })
       if (checkSmcp) {
         const buyit = {
-          symbol: symbol,
+          symbol: body.symbol,
           text: 'initsmcp',
-          type: type,
-          msg: `มีการสั่งซื้อ Market ${symbol} เข้าเงื่อนไข SMCP`
+          msg: `มีการสั่งซื้อ Market ${body.symbol} เข้าเงื่อนไข SMCP`
         }
+
         await lineNotifyPost.postLineNotify(buyit)
+
         await Smcp.deleteOne({ symbol: body.symbol })
         await mainCalLeverage(body, res)
       } else if (!checkSmcp) {
         const pearson = await Pearson.findOne({ symbol: body.symbol })
+
         if (
           (pearson?.BTP >= 0 && bodyq.side === 'BUY') ||
           (pearson?.BTP <= 0 && bodyq.side === 'SELL')
@@ -105,7 +107,6 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           const buyit = {
             symbol: symbol,
             text: 'initpearson',
-            type: type,
             msg: `มีการสั่งซื้อ Market ${symbol} เข้าเงื่อนไข Pearson : ${pearson?.BTP}`
           }
           await lineNotifyPost.postLineNotify(buyit)
