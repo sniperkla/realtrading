@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const { type } = require('os')
 const Schema = mongoose.Schema
 
 const Log = new Schema(
@@ -18,7 +19,13 @@ const Log = new Schema(
     takeProfitZone: { type: Object },
     lockStopLoss: {
       type: Object,
-      default: { lock: false, zone1: false, zone2: false, zone3: false }
+      default: {
+        lockBigTrend: false,
+        lock: false,
+        zone1: false,
+        zone2: false,
+        zone3: false
+      }
     }
   },
   {

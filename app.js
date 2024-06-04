@@ -15,9 +15,12 @@ const reverse = require('./lib/reverseSide')
 const checkConditionOBOS = require('./lib/checkCondition')
 const cron = require('node-cron')
 const cronJub = require('./lib/cronJob')
-
 const updateMarketCounter = require('./lib/checkMarketCounter')
 const get = combine.combineUser()
+const Smcp = require('./model/smcp')
+const Pearson = require('./model/pearsons')
+const smcpChecker = require('./lib/smcpChecker')
+const pearsonsChecker = require('./lib/pearsonChecker')
 
 require('dotenv').config()
 
@@ -26,6 +29,7 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
 const mongoose = require('mongoose')
+
 const pathName = process.env.NAME
 const connectionString = `${process.env.DB}` + `${pathName}`
 
@@ -39,6 +43,11 @@ let bodyq = null
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
     //test
+    const checkMarket = await Log.findOne({ symbol: 'BTCUSDT' })
+    const checkBigtrend = checkMarket.lockStopLoss.lockBigTrend
+
+    console.log('checkBigtrend', checkBigtrend)
+
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
@@ -55,96 +64,61 @@ task1.start()
 
 app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
-    const limitMarket = 1000
     bodyq = req.body
 
     let body = await checkDataFirst(bodyq)
-    console.log('body', body)
 
-    if (body.type === 'STOP_MARKET' && bodyq?.version === 'v3') {
+    if (body.SMCP) {
+      await smcpChecker.smcpCheck(body, get.API_KEY[0], get.SECRET_KEY[0], res)
+    }
+    if (body.BTP || body.STP) {
+      await pearsonsChecker.pearsonChecker(
+        body,
+        get.API_KEY[0],
+        get.SECRET_KEY[0],
+        res
+      )
+    }
+
+    if (body.type === 'STOP_MARKET' && bodyq?.version === 'v3.1') {
       await checkStopLoss(body)
     }
 
-    if (body?.type === 'MARKET' && bodyq?.version === 'v3') {
-      const checkMarketFirst = await Log.findOne({ symbol: body.symbol })
-      if (checkMarketFirst?.side === body.side) {
-        console.log('do nithing')
-        return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
-      } else if (checkMarketFirst?.side !== body.side && checkMarketFirst) {
-        await reverse.reverseSide(
-          body,
-          body.side,
-          get.API_KEY[0],
-          get.SECRET_KEY[0]
-        )
-        return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
-      }
-      const checkLimitMarket = await updateMarketCounter.incCounter()
-      if (checkLimitMarket <= limitMarket) {
-        const getAllOpenOrder = await apiBinance.getAllOpenOrder(
-          get.API_KEY[0],
-          get.SECRET_KEY[0]
-        )
-        const checkOpenOrder = getAllOpenOrder.filter((item) => {
-          return (
-            item.type === 'TAKE_PROFIT_MARKET' && item.closePosition === true
-          )
-        })
-        if (checkOpenOrder?.length < 100) {
-          const checkMarketFirst = await Log.findOne({ symbol: body.symbol })
-          if (checkMarketFirst === null) {
-            const calLeverage = await callLeverage.leverageCal(
-              body.symbol,
-              body.priceCal,
-              body.stopPriceCal,
-              body.side,
-              get.API_KEY[0],
-              get.SECRET_KEY[0]
-            )
-            checkCondition(
-              body,
-              res,
-              calLeverage.maximumQty,
-              calLeverage.defaultLeverage,
-              calLeverage.budget,
-              calLeverage.minimum,
-              calLeverage.openLongShort,
-              calLeverage.st,
-              calLeverage.valueAskBid,
-              calLeverage.price,
-              calLeverage.bids,
-              calLeverage.asks,
-              calLeverage.marginStart,
-              calLeverage.marginEnd,
-              calLeverage.lpStart,
-              calLeverage.lpEnd,
-              calLeverage.qtyStart,
-              calLeverage.qtyEnd,
-              calLeverage.marginEnd2,
-              calLeverage.lpEnd2,
-              calLeverage.qtyEnd2,
-              calLeverage.priceCal,
-              calLeverage.running
-            )
-          } else {
-            await updateMarketCounter.deleteCounter()
-            console.log('arleady have market')
-          }
-        } else {
-          const buyit = {
-            text: 'overTrade',
-            msg: `เกินลิมิตเทรด > ${checkOpenOrder.length} | ชื่อเหรียญ : ${body.symbol}`
-          }
-          await lineNotifyPost.postLineNotify(buyit)
-          await updateMarketCounter.deleteCounter()
-        }
-      } else {
+    if (body?.type === 'MARKET' && bodyq?.version === 'v3.1') {
+      const checkSmcp = await Smcp.findOne({ symbol: body.symbol })
+      if (checkSmcp) {
         const buyit = {
-          text: 'overTrade',
-          msg: `กำลังคำนวณ Market เหลืออีก ${checkLimitMarket} Quene`
+          symbol: symbol,
+          text: 'initsmcp',
+          type: type,
+          msg: `มีการสั่งซื้อ Market ${symbol} เข้าเงื่อนไข SMCP`
         }
         await lineNotifyPost.postLineNotify(buyit)
-        await updateMarketCounter.deleteCounter()
+        await Smcp.deleteOne({ symbol: body.symbol })
+        await mainCalLeverage(body, res)
+      } else if (!checkSmcp) {
+        const pearson = await Pearson.findOne({ symbol: body.symbol })
+        if (
+          (pearson?.BTP >= 0 && bodyq.side === 'BUY') ||
+          (pearson?.BTP <= 0 && bodyq.side === 'SELL')
+        ) {
+          const buyit = {
+            symbol: symbol,
+            text: 'initpearson',
+            type: type,
+            msg: `มีการสั่งซื้อ Market ${symbol} เข้าเงื่อนไข Pearson : ${pearson?.BTP}`
+          }
+          await lineNotifyPost.postLineNotify(buyit)
+          await mainCalLeverage(body, res)
+        } else {
+          const buyit = {
+            symbol: symbol,
+            text: 'donotbuying',
+            type: type,
+            msg: `❌ ${symbol} ไม่มีการสั่งซื้อ ไม่เข้าเงื่อนไข BTP และ SMCP`
+          }
+          await lineNotifyPost.postLineNotify(buyit)
+        }
       }
     } else {
       await checkConditionOBOS.checkConditionOBOS(
@@ -184,6 +158,7 @@ const checkCondition = async (
   running
 ) => {
   try {
+    console.log('body', body)
     const finalBody = {
       ...body,
       quantity: maximumQty,
@@ -324,13 +299,26 @@ const checkStopLoss = async (body) => {
 const checkMarketBody = (body) => {
   let real = {}
 
-  real = {
-    type: body.type,
-    version: body.type,
-    side: body.side,
-    symbol: body.symbol,
-    priceCal: parseFloat(body.priceCal),
-    stopPriceCal: parseFloat(body.stopPriceCal)
+  if (body.side === 'BUY')
+    real = {
+      type: body.type,
+      version: body.version,
+      BTU: body.BTU,
+      side: body.side,
+      symbol: body.symbol,
+      priceCal: parseFloat(body.priceCal),
+      stopPriceCal: parseFloat(body.stopPriceCal)
+    }
+  else if (body.side === 'SELL') {
+    real = {
+      type: body.type,
+      version: body.version,
+      BTL: body.BTL,
+      side: body.side,
+      symbol: body.symbol,
+      priceCal: parseFloat(body.priceCal),
+      stopPriceCal: parseFloat(body.stopPriceCal)
+    }
   }
   return real
 }
@@ -354,12 +342,10 @@ const checkDataFirst = async (bodyq) => {
     const modifiedBody = { ...bodyq, symbol: bodyq.symbol.replace(/\.P$/, '') }
 
     const bodyMarket = checkMarketBody(modifiedBody)
-
     const checkData = await Trading.findOne({
       symbol: bodyMarket.symbol,
       type: bodyMarket.type
     })
-
     if (checkData) {
       await Trading.updateOne(
         {
@@ -370,6 +356,7 @@ const checkDataFirst = async (bodyq) => {
         { upsert: true }
       )
     }
+
     if (!checkData) await Trading.create(bodyMarket)
 
     return bodyMarket
@@ -388,6 +375,78 @@ const checkDataFirst = async (bodyq) => {
     }
 
     return body
+  }
+}
+
+const mainCalLeverage = async (body, res) => {
+  const checkLimitMarket = await updateMarketCounter.incCounter()
+  const limitMarket = 1000
+
+  if (checkLimitMarket <= limitMarket) {
+    const getAllOpenOrder = await apiBinance.getAllOpenOrder(
+      get.API_KEY[0],
+      get.SECRET_KEY[0]
+    )
+    const checkOpenOrder = getAllOpenOrder.filter((item) => {
+      return item.type === 'TAKE_PROFIT_MARKET' && item.closePosition === true
+    })
+    if (checkOpenOrder?.length < 100) {
+      const checkMarketFirst = await Log.findOne({
+        symbol: body.symbol
+      })
+      if (checkMarketFirst === null) {
+        const calLeverage = await callLeverage.leverageCal(
+          body.symbol,
+          body.priceCal,
+          body.stopPriceCal,
+          body.side,
+          get.API_KEY[0],
+          get.SECRET_KEY[0]
+        )
+        checkCondition(
+          body,
+          res,
+          calLeverage.maximumQty,
+          calLeverage.defaultLeverage,
+          calLeverage.budget,
+          calLeverage.minimum,
+          calLeverage.openLongShort,
+          calLeverage.st,
+          calLeverage.valueAskBid,
+          calLeverage.price,
+          calLeverage.bids,
+          calLeverage.asks,
+          calLeverage.marginStart,
+          calLeverage.marginEnd,
+          calLeverage.lpStart,
+          calLeverage.lpEnd,
+          calLeverage.qtyStart,
+          calLeverage.qtyEnd,
+          calLeverage.marginEnd2,
+          calLeverage.lpEnd2,
+          calLeverage.qtyEnd2,
+          calLeverage.priceCal,
+          calLeverage.running
+        )
+      } else {
+        await updateMarketCounter.deleteCounter()
+        console.log('arleady have market')
+      }
+    } else {
+      const buyit = {
+        text: 'overTrade',
+        msg: `เกินลิมิตเทรด > ${checkOpenOrder.length} | ชื่อเหรียญ : ${body.symbol}`
+      }
+      await lineNotifyPost.postLineNotify(buyit)
+      await updateMarketCounter.deleteCounter()
+    }
+  } else {
+    const buyit = {
+      text: 'overTrade',
+      msg: `กำลังคำนวณ Market เหลืออีก ${checkLimitMarket} Quene`
+    }
+    await lineNotifyPost.postLineNotify(buyit)
+    await updateMarketCounter.deleteCounter()
   }
 }
 
