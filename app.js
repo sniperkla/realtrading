@@ -158,7 +158,6 @@ const checkCondition = async (
   running
 ) => {
   try {
-    console.log('body', body)
     const finalBody = {
       ...body,
       quantity: maximumQty,
