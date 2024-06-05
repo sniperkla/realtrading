@@ -81,27 +81,30 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
 
     if (body?.type === 'MARKET' && bodyq?.version === 'v3.1') {
       const checkSmcp = await Smcp.findOne({ symbol: body.symbol })
+      const data = await Log.findOne({ symbol: body.symbol })
       if (checkSmcp) {
         const buyit = {
           symbol: body.symbol,
           text: 'initsmcp',
-          msg: `มีการสั่งซื้อ Market ${body.symbol} เข้าเงื่อนไข SMCP`
+          msg: `✅ มีการสั่งซื้อ Market ${body.symbol} เข้าเงื่อนไข SMCP = ${
+            checkSmcp ? '1' : '0'
+          }`
         }
-
         await lineNotifyPost.postLineNotify(buyit)
-
         await Smcp.deleteOne({ symbol: body.symbol })
         await mainCalLeverage(body, res)
       } else if (!checkSmcp) {
         const pearson = await Pearson.findOne({ symbol: body.symbol })
         if (
-          (pearson?.BTP >= 0 && bodyq.side === 'BUY') ||
-          (pearson?.BTP <= 0 && bodyq.side === 'SELL')
+          (pearson?.BTP >= 0 && bodyq.side === 'BUY' && !data) ||
+          (pearson?.BTP <= 0 && bodyq.side === 'SELL' && !data)
         ) {
           const buyit = {
             symbol: body.symbol,
             text: 'initpearson',
-            msg: `มีการสั่งซื้อ Market ${body.symbol} เข้าเงื่อนไข Pearson : ${pearson?.BTP}`
+            msg: `✅ มีการสั่งซื้อ Market ${body.symbol} เข้าเงื่อนไข BTP : ${
+              pearson?.BTP >= 0 ? '+' : '-'
+            }`
           }
           await lineNotifyPost.postLineNotify(buyit)
           await mainCalLeverage(body, res)
@@ -109,10 +112,19 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           const buyit = {
             symbol: body.symbol,
             text: 'donotbuying',
-            msg: `❌ ${body.symbol} ไม่มีการสั่งซื้อ ไม่เข้าเงื่อนไข BTP และ SMCP`
+            msg: `❌ ${body.symbol} ไม่เข้าเงื่อนไข BTP ${
+              pearson?.BTP >= 0 ? '+' : '-'
+            } และ SMCP = ${checkSmcp ? '1' : '0'}`
           }
           await lineNotifyPost.postLineNotify(buyit)
         }
+      } else {
+        const buyit = {
+          symbol: body.symbol,
+          text: 'donotbuying',
+          msg: `❌ ยกเลิกการสั๋งซื้อเหรียญ ${body.symbol} มีไม้เปิดอยู่`
+        }
+        await lineNotifyPost.postLineNotify(buyit)
       }
     } else {
       await checkConditionOBOS.checkConditionOBOS(
