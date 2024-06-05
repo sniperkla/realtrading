@@ -42,12 +42,6 @@ mongoose
 let bodyq = null
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
-    //test
-    const checkMarket = await Log.findOne({ symbol: 'BTCUSDT' })
-    const checkBigtrend = checkMarket.lockStopLoss.lockBigTrend
-
-    console.log('checkBigtrend', checkBigtrend)
-
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
