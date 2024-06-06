@@ -103,7 +103,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
             text: 'initpearson',
             msg: `✅ มีการสั่งซื้อ Market ${body.symbol} เข้าเงื่อนไข BTP : ${
               pearson?.BTP >= 0 ? '+' : '-'
-            }`
+            }\n Market side : ${bodyq.side}`
           }
           await lineNotifyPost.postLineNotify(buyit)
           await mainCalLeverage(body, res)
@@ -113,7 +113,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
             text: 'donotbuying',
             msg: `❌ ${body.symbol} ไม่เข้าเงื่อนไข BTP ${
               pearson?.BTP >= 0 ? '+' : '-'
-            } และ SMCP = ${checkSmcp ? '1' : '0'} Market side : ${bodyq.side}`
+            } และ SMCP = ${checkSmcp ? '1' : '0'}\n Market side : ${bodyq.side}`
           }
           await lineNotifyPost.postLineNotify(buyit)
         }
@@ -121,8 +121,10 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
         const buyit = {
           symbol: body.symbol,
           text: 'donotbuying',
-          msg: `❌ ยกเลิกการสั๋งซื้อเหรียญ ${body.symbol} มีไม้เปิดอยู่`
+          msg: `❌ ยกเลิกการสั่งซื้อเหรียญ ${body.symbol} มีไม้เปิดอยู่\n
+         ✅ ยกเลิกการตั้ง SMCP`
         }
+        await Smcp.deleteOne({ symbol: body.symbol })
         await lineNotifyPost.postLineNotify(buyit)
       }
     } else {
