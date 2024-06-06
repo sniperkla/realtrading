@@ -397,7 +397,7 @@ const mainCalLeverage = async (body, res) => {
         const calLeverage = await callLeverage.leverageCal(
           body.symbol,
           body.priceCal,
-          body.stopPriceCal2,
+          body.stopPriceCal,
           body.side,
           get.API_KEY[0],
           get.SECRET_KEY[0]
