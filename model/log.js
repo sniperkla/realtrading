@@ -10,23 +10,9 @@ const Log = new Schema(
     price: { type: String },
     takeProfit: { type: Object },
     time: { type: Date, default: Date.now },
-    binanceTakeProfit1: { type: Object },
-    binanceTakeProfit2: { type: Object },
-    binanceTakeProfit3: { type: Object },
-    binanceTakeProfit4: { type: Object },
+    binanceTakeProfit: { type: Object },
     binanceMarket: { type: Object },
-    binanceStopLoss: { type: Object },
-    takeProfitZone: { type: Object },
-    lockStopLoss: {
-      type: Object,
-      default: {
-        lockBigTrend: false,
-        lock: false,
-        zone1: false,
-        zone2: false,
-        zone3: false
-      }
-    }
+    binanceStopLoss: { type: Object }
   },
   {
     timestamps: true

@@ -1,7 +1,7 @@
 const express = require('express')
 const HTTPStatus = require('http-status')
 const app = express()
-const port = 3050
+const port = 3070
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const Trading = require('./model/trading')
@@ -11,8 +11,6 @@ const apiBinance = require('./lib/apibinance')
 const callLeverage = require('./lib/calLeverage')
 const realEnvironment = require('./lib/realEnv')
 const combine = require('./lib/combineUser')
-const reverse = require('./lib/reverseSide')
-const checkConditionOBOS = require('./lib/checkCondition')
 const cron = require('node-cron')
 const cronJub = require('./lib/cronJob')
 const updateMarketCounter = require('./lib/checkMarketCounter')
@@ -74,6 +72,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
         res
       )
     }
+
     if (body.type === 'STOP_MARKET' && bodyq?.version === 'v3.1') {
       await checkStopLoss(body)
     }
@@ -81,6 +80,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
     if (body?.type === 'MARKET' && bodyq?.version === 'v3.1') {
       const checkSmcp = await Smcp.findOne({ symbol: body.symbol })
       const data = await Log.findOne({ symbol: body.symbol })
+
       if (checkSmcp && !data) {
         const buyit = {
           symbol: body.symbol,
@@ -90,8 +90,8 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           }`
         }
         await lineNotifyPost.postLineNotify(buyit)
-        await Smcp.deleteOne({ symbol: body.symbol })
         await mainCalLeverage(body, res)
+        await Smcp.deleteOne({ symbol: body.symbol })
       } else if (!checkSmcp && !data) {
         const pearson = await Pearson.findOne({ symbol: body.symbol })
         if (
@@ -103,7 +103,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
             text: 'initpearson',
             msg: `✅ มีการสั่งซื้อ Market ${body.symbol} เข้าเงื่อนไข BTP : ${
               pearson?.BTP >= 0 ? '+' : '-'
-            }`
+            }\n Market side : ${bodyq.side}`
           }
           await lineNotifyPost.postLineNotify(buyit)
           await mainCalLeverage(body, res)
@@ -113,7 +113,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
             text: 'donotbuying',
             msg: `❌ ${body.symbol} ไม่เข้าเงื่อนไข BTP ${
               pearson?.BTP >= 0 ? '+' : '-'
-            } และ SMCP = ${checkSmcp ? '1' : '0'} Market side : ${bodyq.side}`
+            } และ SMCP = ${checkSmcp ? '1' : '0'}\n Market side : ${bodyq.side}`
           }
           await lineNotifyPost.postLineNotify(buyit)
         }
@@ -121,17 +121,12 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
         const buyit = {
           symbol: body.symbol,
           text: 'donotbuying',
-          msg: `❌ ยกเลิกการสั๋งซื้อเหรียญ ${body.symbol} มีไม้เปิดอยู่`
+          msg: `❌ ยกเลิกการสั่งซื้อเหรียญ ${body.symbol} มีไม้เปิดอยู่\n
+         ✅ ยกเลิกการตั้ง SMCP`
         }
+        await Smcp.deleteOne({ symbol: body.symbol })
         await lineNotifyPost.postLineNotify(buyit)
       }
-    } else {
-      await checkConditionOBOS.checkConditionOBOS(
-        body,
-        res,
-        get.API_KEY[0],
-        get.SECRET_KEY[0]
-      )
     }
     return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
   } catch (error) {}
@@ -311,7 +306,7 @@ const checkMarketBody = (body) => {
       side: body.side,
       symbol: body.symbol,
       priceCal: parseFloat(body.priceCal),
-      stopPriceCal: parseFloat(body.stopPriceCal)
+      stopPriceCal: parseFloat(body.stopPriceCal2)
     }
   else if (body.side === 'SELL') {
     real = {
@@ -321,7 +316,7 @@ const checkMarketBody = (body) => {
       side: body.side,
       symbol: body.symbol,
       priceCal: parseFloat(body.priceCal),
-      stopPriceCal: parseFloat(body.stopPriceCal)
+      stopPriceCal: parseFloat(body.stopPriceCal2)
     }
   }
   return real
@@ -402,7 +397,7 @@ const mainCalLeverage = async (body, res) => {
         const calLeverage = await callLeverage.leverageCal(
           body.symbol,
           body.priceCal,
-          body.stopPriceCal,
+          body.stopPriceCal2,
           body.side,
           get.API_KEY[0],
           get.SECRET_KEY[0]
