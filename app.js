@@ -74,7 +74,6 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
         res
       )
     }
-
     if (body.type === 'STOP_MARKET' && bodyq?.version === 'v3.1') {
       await checkStopLoss(body)
     }
@@ -82,7 +81,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
     if (body?.type === 'MARKET' && bodyq?.version === 'v3.1') {
       const checkSmcp = await Smcp.findOne({ symbol: body.symbol })
       const data = await Log.findOne({ symbol: body.symbol })
-      if (checkSmcp) {
+      if (checkSmcp && !data) {
         const buyit = {
           symbol: body.symbol,
           text: 'initsmcp',
@@ -93,7 +92,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
         await lineNotifyPost.postLineNotify(buyit)
         await Smcp.deleteOne({ symbol: body.symbol })
         await mainCalLeverage(body, res)
-      } else if (!checkSmcp) {
+      } else if (!checkSmcp && !data) {
         const pearson = await Pearson.findOne({ symbol: body.symbol })
         if (
           (pearson?.BTP >= 0 && bodyq.side === 'BUY' && !data) ||
@@ -114,7 +113,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
             text: 'donotbuying',
             msg: `❌ ${body.symbol} ไม่เข้าเงื่อนไข BTP ${
               pearson?.BTP >= 0 ? '+' : '-'
-            } และ SMCP = ${checkSmcp ? '1' : '0'}`
+            } และ SMCP = ${checkSmcp ? '1' : '0'} Market side : ${bodyq.side}`
           }
           await lineNotifyPost.postLineNotify(buyit)
         }
