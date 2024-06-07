@@ -118,13 +118,15 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           await lineNotifyPost.postLineNotify(buyit)
         }
       } else {
+        if (checkSmcp) {
+          await Smcp.deleteOne({ symbol: body.symbol })
+        }
         const buyit = {
           symbol: body.symbol,
           text: 'donotbuying',
           msg: `❌ ยกเลิกการสั่งซื้อเหรียญ ${body.symbol} มีไม้เปิดอยู่\n
-         ✅ ยกเลิกการตั้ง SMCP`
+        ${checkSmcp ? `✅ ยกเลิกการตั้ง SMCP` : 'ไม่มีการตั้ง SMCP ก่อนหน้า'}`
         }
-        await Smcp.deleteOne({ symbol: body.symbol })
         await lineNotifyPost.postLineNotify(buyit)
       }
     }
