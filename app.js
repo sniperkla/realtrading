@@ -79,6 +79,9 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
     }
 
     if (body?.type === 'MARKET' && bodyq?.version === 'v3.1') {
+      // check first
+      await cronJub.checkTakeProfit4Step()
+
       const checkSmcp = await Smcp.findOne({ symbol: body.symbol })
       const data = await Log.findOne({ symbol: body.symbol })
       if (checkSmcp && !data) {
