@@ -27,9 +27,11 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
 const mongoose = require('mongoose')
+const Martinglale = require('./model/martinglale')
 
 const pathName = process.env.NAME
 const connectionString = `${process.env.DB}` + `${pathName}`
+const margin = process.env.MARGIN
 
 mongoose
   .connect(connectionString, {
@@ -47,7 +49,7 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
 const scheduleForakeProfit4Step = '*/40 * * * * *'
 
 const doCheckTakeProfit4Step = async () => {
-  await cronJub.checkTakeProfit4Step()
+  await cronJub.checkTakeProfit4Step(margin)
 }
 
 const task1 = cron.schedule(scheduleForakeProfit4Step, doCheckTakeProfit4Step)
@@ -78,9 +80,17 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
     }
 
     if (body?.type === 'MARKET' && bodyq?.version === 'v3.1') {
+      const martingale = await Martinglale.findOne({ symbol: body.symbol })
       const checkSmcp = await Smcp.findOne({ symbol: body.symbol })
       const data = await Log.findOne({ symbol: body.symbol })
-
+      if (!martingale) {
+        console.log('created Martingale~~~')
+        await Martinglale.create({
+          symbol: body.symbol,
+          stackLose: 1,
+          previousMargin: margin
+        })
+      }
       if (checkSmcp && !data) {
         const buyit = {
           symbol: body.symbol,
@@ -90,7 +100,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           }`
         }
         await lineNotifyPost.postLineNotify(buyit)
-        await mainCalLeverage(body, res)
+        await mainCalLeverage(body, res, margin)
         await Smcp.deleteOne({ symbol: body.symbol })
       } else if (!checkSmcp && !data) {
         const pearson = await Pearson.findOne({ symbol: body.symbol })
@@ -101,21 +111,23 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           const buyit = {
             symbol: body.symbol,
             text: 'initpearson',
-            msg: `✅ มีการสั่งซื้อ Market ${body.symbol} เข้าเงื่อนไข BTP Trend : ${
+            msg: `✅ มีการสั่งซื้อ Market ${
+              body.symbol
+            } เข้าเงื่อนไข BTP Trend : ${
               pearson?.BTP >= 0 ? '+' : '-'
             }\nMarket side : ${bodyq.side}`
           }
           await lineNotifyPost.postLineNotify(buyit)
-          await mainCalLeverage(body, res)
+          await mainCalLeverage(body, res, margin)
         } else {
           const buyit = {
             symbol: body.symbol,
             text: 'donotbuying',
             msg: `❌ ${body.symbol} ไม่เข้าเงื่อนไข BTP Trend : ${
               pearson?.BTP >= 0 ? '+' : '-'
-            } และ ${checkSmcp ? 'มี SMCP' : 'ไม่มี SMCP เปิดอยู่'}\nMarket side : ${
-              bodyq.side
-            }`
+            } และ ${
+              checkSmcp ? 'มี SMCP' : 'ไม่มี SMCP เปิดอยู่'
+            }\nMarket side : ${bodyq.side}`
           }
           await lineNotifyPost.postLineNotify(buyit)
         }
@@ -382,10 +394,9 @@ const checkDataFirst = async (bodyq) => {
   }
 }
 
-const mainCalLeverage = async (body, res) => {
+const mainCalLeverage = async (body, res, margin) => {
   const checkLimitMarket = await updateMarketCounter.incCounter()
   const limitMarket = 1000
-
   if (checkLimitMarket <= limitMarket) {
     const getAllOpenOrder = await apiBinance.getAllOpenOrder(
       get.API_KEY[0],
@@ -405,7 +416,8 @@ const mainCalLeverage = async (body, res) => {
           body.stopPriceCal,
           body.side,
           get.API_KEY[0],
-          get.SECRET_KEY[0]
+          get.SECRET_KEY[0],
+          margin
         )
         checkCondition(
           body,
