@@ -85,8 +85,8 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
         const buyit = {
           symbol: body.symbol,
           text: 'initsmcp',
-          msg: `✅ มีการสั่งซื้อ Market ${body.symbol} เข้าเงื่อนไข SMCP = ${
-            checkSmcp ? '1' : '0'
+          msg: `✅ มีการสั่งซื้อ Market ${body.symbol} เข้าเงื่อนไข ${
+            checkSmcp ? 'มี SMCP เปิดอยู่' : 'ไม่มี SMCP เปิดอยู่'
           }`
         }
         await lineNotifyPost.postLineNotify(buyit)
@@ -111,9 +111,11 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           const buyit = {
             symbol: body.symbol,
             text: 'donotbuying',
-            msg: `❌ ${body.symbol} ไม่เข้าเงื่อนไข BTP ${
+            msg: `❌ ${body.symbol} ไม่เข้าเงื่อนไข BTP Trend : ${
               pearson?.BTP >= 0 ? '+' : '-'
-            } และ SMCP = ${checkSmcp ? '1' : '0'}\n Market side : ${bodyq.side}`
+            } และ ${
+              checkSmcp ? 'มี SMCP' : 'ไม่มี SMCP เปิดอยู่'
+            }\nMarket side : ${bodyq.side}`
           }
           await lineNotifyPost.postLineNotify(buyit)
         }
@@ -124,10 +126,10 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
         const buyit = {
           symbol: body.symbol,
           text: 'donotbuying',
-          msg: `❌ ยกเลิกการสั่งซื้อเหรียญ ${body.symbol} มีไม้เปิดอยู่\n
-        ${checkSmcp ? `✅ ยกเลิกการตั้ง SMCP` : 'ไม่มีการเกิด​ SMCP ก่อนหน้า'}`
+          msg: `❌ ยกเลิกการสั่งซื้อเหรียญ ${body.symbol} มีไม้เปิดอยู่\n${
+            checkSmcp ? `✅ ยกเลิกการตั้ง SMCP` : 'ไม่มีการตั้ง SMCP ก่อนหน้า'
+          }`
         }
-
         await lineNotifyPost.postLineNotify(buyit)
       }
     } else {
