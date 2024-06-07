@@ -80,11 +80,13 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
     }
 
     if (body?.type === 'MARKET' && bodyq?.version === 'v3.1') {
+      //first check before buy
+      await cronJub.checkTakeProfit4Step(margin)
+
       const martingale = await Martinglale.findOne({ symbol: body.symbol })
       const checkSmcp = await Smcp.findOne({ symbol: body.symbol })
       const data = await Log.findOne({ symbol: body.symbol })
       if (!martingale) {
-        console.log('created Martingale~~~')
         await Martinglale.create({
           symbol: body.symbol,
           stackLose: 1,
