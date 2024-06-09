@@ -59,6 +59,11 @@ task1.start()
 app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
     bodyq = req.body
+    const buyit = {
+      text: 'debug',
+      msg: `${JSON.stringify(bodyq)}`
+    }
+    await lineNotifyPost.postLineNotify(buyit)
 
     let body = await checkDataFirst(bodyq)
 
