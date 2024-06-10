@@ -59,11 +59,6 @@ task1.start()
 app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
     bodyq = req.body
-    const buyit = {
-      text: 'debug',
-      msg: `${JSON.stringify(bodyq)}`
-    }
-    await lineNotifyPost.postLineNotify(buyit)
 
     let body = await checkDataFirst(bodyq)
 
@@ -152,6 +147,11 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
         await lineNotifyPost.postLineNotify(buyit)
       }
     }
+    const buyit = {
+      text: 'debug',
+      msg: `${JSON.stringify(bodyq)}`
+    }
+    await lineNotifyPost.postLineNotify(buyit)
     return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
   } catch (error) {}
 })
