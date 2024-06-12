@@ -58,100 +58,98 @@ task1.start()
 
 app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
-    bodyq = req.body
-
-    let body = await checkDataFirst(bodyq)
-
-    if (body.SMCP) {
-      await smcpChecker.smcpCheck(body, get.API_KEY[0], get.SECRET_KEY[0], res)
-    }
-    // if (body.BTP || body.STP) {
-    if (body.BTP) {
+    let bodyq = req.body
+    if (bodyq.SMCP) {
+      await smcpChecker.smcpCheck(bodyq, get.API_KEY[0], get.SECRET_KEY[0], res)
+    } else if (bodyq.BTP) {
       await pearsonsChecker.pearsonChecker(
-        body,
+        bodyq,
         get.API_KEY[0],
         get.SECRET_KEY[0],
         res
       )
-    }
-
-    if (body.type === 'STOP_MARKET' && bodyq?.version === 'v3.1') {
-      await checkStopLoss(body)
-    }
-
-    if (body?.type === 'MARKET' && bodyq?.version === 'v3.1') {
-      //first check before buy
-      await cronJub.checkTakeProfit4Step(margin)
-
-      const martingale = await Martinglale.findOne({ symbol: body.symbol })
-      const checkSmcp = await Smcp.findOne({ symbol: body.symbol })
-      const data = await Log.findOne({ symbol: body.symbol })
-      if (!martingale) {
-        await Martinglale.create({
-          symbol: body.symbol,
-          stackLose: 1,
-          previousMargin: margin
-        })
+    } else {
+      let body = await checkDataFirst(bodyq)
+      if (body.type === 'STOP_MARKET' && bodyq?.version === 'v3.1') {
+        await checkStopLoss(body)
       }
-      if (checkSmcp && !data) {
-        const buyit = {
-          symbol: body.symbol,
-          text: 'initsmcp',
-          msg: `✅ มีการสั่งซื้อ Market ${body.symbol} เข้าเงื่อนไข ${
-            checkSmcp ? 'มี SMCP เปิดอยู่' : 'ไม่มี SMCP เปิดอยู่'
-          }`
+
+      if (body?.type === 'MARKET' && bodyq?.version === 'v3.1') {
+        //first check before buy
+        await cronJub.checkTakeProfit4Step(margin)
+
+        const martingale = await Martinglale.findOne({ symbol: body.symbol })
+        const checkSmcp = await Smcp.findOne({ symbol: body.symbol })
+        const data = await Log.findOne({ symbol: body.symbol })
+        if (!martingale) {
+          await Martinglale.create({
+            symbol: body.symbol,
+            stackLose: 1,
+            previousMargin: margin
+          })
         }
-        await lineNotifyPost.postLineNotify(buyit)
-        await mainCalLeverage(body, res, margin)
-        await Smcp.deleteOne({ symbol: body.symbol })
-      } else if (!checkSmcp && !data) {
-        const pearson = await Pearson.findOne({ symbol: body.symbol })
-        if (
-          (pearson?.BTP >= 0 && bodyq.side === 'BUY' && !data) ||
-          (pearson?.BTP <= 0 && bodyq.side === 'SELL' && !data)
-        ) {
+        if (checkSmcp && !data) {
           const buyit = {
             symbol: body.symbol,
-            text: 'initpearson',
-            msg: `✅ มีการสั่งซื้อ Market ${
-              body.symbol
-            } เข้าเงื่อนไข BTP Trend : ${
-              pearson?.BTP >= 0 ? '+' : '-'
-            }\nMarket side : ${bodyq.side}`
+            text: 'initsmcp',
+            msg: `✅ มีการสั่งซื้อ Market ${body.symbol} เข้าเงื่อนไข ${
+              checkSmcp ? 'มี SMCP เปิดอยู่' : 'ไม่มี SMCP เปิดอยู่'
+            }`
           }
           await lineNotifyPost.postLineNotify(buyit)
           await mainCalLeverage(body, res, margin)
+          await Smcp.deleteOne({ symbol: body.symbol })
+        } else if (!checkSmcp && !data) {
+          const pearson = await Pearson.findOne({ symbol: body.symbol })
+          if (
+            (pearson?.BTP >= 0 && bodyq.side === 'BUY' && !data) ||
+            (pearson?.BTP <= 0 && bodyq.side === 'SELL' && !data)
+          ) {
+            const buyit = {
+              symbol: body.symbol,
+              text: 'initpearson',
+              msg: `✅ มีการสั่งซื้อ Market ${
+                body.symbol
+              } เข้าเงื่อนไข BTP Trend : ${
+                pearson?.BTP >= 0 ? '+' : '-'
+              }\nMarket side : ${bodyq.side}`
+            }
+            await lineNotifyPost.postLineNotify(buyit)
+            await mainCalLeverage(body, res, margin)
+          } else {
+            const buyit = {
+              symbol: body.symbol,
+              text: 'donotbuying',
+              msg: `❌ ${body.symbol} ไม่เข้าเงื่อนไข BTP Trend : ${
+                pearson?.BTP >= 0 ? '+' : '-'
+              } และ ${
+                checkSmcp ? 'มี SMCP' : 'ไม่มี SMCP เปิดอยู่'
+              }\nMarket side : ${bodyq.side}`
+            }
+            await lineNotifyPost.postLineNotify(buyit)
+          }
         } else {
+          if (checkSmcp) {
+            await Smcp.deleteOne({ symbol: body.symbol })
+          }
           const buyit = {
             symbol: body.symbol,
             text: 'donotbuying',
-            msg: `❌ ${body.symbol} ไม่เข้าเงื่อนไข BTP Trend : ${
-              pearson?.BTP >= 0 ? '+' : '-'
-            } และ ${
-              checkSmcp ? 'มี SMCP' : 'ไม่มี SMCP เปิดอยู่'
-            }\nMarket side : ${bodyq.side}`
+            msg: `❌ ยกเลิกการสั่งซื้อเหรียญ ${body.symbol} มีไม้เปิดอยู่\n${
+              checkSmcp ? `✅ ยกเลิกการตั้ง SMCP` : 'ไม่มีการตั้ง SMCP ก่อนหน้า'
+            }`
           }
           await lineNotifyPost.postLineNotify(buyit)
         }
-      } else {
-        if (checkSmcp) {
-          await Smcp.deleteOne({ symbol: body.symbol })
-        }
-        const buyit = {
-          symbol: body.symbol,
-          text: 'donotbuying',
-          msg: `❌ ยกเลิกการสั่งซื้อเหรียญ ${body.symbol} มีไม้เปิดอยู่\n${
-            checkSmcp ? `✅ ยกเลิกการตั้ง SMCP` : 'ไม่มีการตั้ง SMCP ก่อนหน้า'
-          }`
-        }
-        await lineNotifyPost.postLineNotify(buyit)
       }
     }
-    const buyit = {
-      text: 'debug',
-      msg: `${JSON.stringify(bodyq)}`
-    }
-    await lineNotifyPost.postLineNotify(buyit)
+    setTimeout(async () => {
+      const buyit = {
+        text: 'debug',
+        msg: `${JSON.stringify(bodyq)}`
+      }
+      await lineNotifyPost.postLineNotify(buyit)
+    }, 1000)
     return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
   } catch (error) {}
 })
