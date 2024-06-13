@@ -92,9 +92,9 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           const buyit = {
             symbol: body.symbol,
             text: 'initsmcp',
-            msg: `💎 มีการสั่งซื้อ Market ${body.symbol}\nเข้าเงื่อนไข ${
+            msg: `💎 มีการสั่งซื้อ Market ${body.symbol}\n                     เข้าเงื่อนไข ${
               checkSmcp ? '1' : '0'
-            }💎 `
+            } 💎`
           }
           await lineNotifyPost.postLineNotify(buyit)
           await mainCalLeverage(body, res, margin)
@@ -110,9 +110,9 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
               text: 'initpearson',
               msg: `💎 มีการสั่งซื้อ Market ${
                 body.symbol
-              }\nเข้าเงื่อนไข BTP Trend : ${
+              }\n                     เข้าเงื่อนไข BTP Trend : ${
                 pearson?.BTP >= 0 ? '+' : '-'
-              }\nMarket side : ${bodyq.side} 💎`
+              }\n                     Market side : ${bodyq.side} 💎`
             }
             await lineNotifyPost.postLineNotify(buyit)
             await mainCalLeverage(body, res, margin)
@@ -122,9 +122,9 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
               text: 'donotbuying',
               msg: `❌ ${body.symbol} ไม่เข้าเงื่อนไข BTP Trend : ${
                 pearson?.BTP >= 0 ? '+' : '-'
-              }\nSMCP : ${
+              }\n                     SMCP : ${
                 checkSmcp ? '1' : '0'
-              }\nMarket side : ${bodyq.side} ❌`
+              }\n                     Market side : ${bodyq.side} ❌`
             }
             await lineNotifyPost.postLineNotify(buyit)
           }
@@ -135,7 +135,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           const buyit = {
             symbol: body.symbol,
             text: 'donotbuying',
-            msg: `❌ ยกเลิกการสั่งซื้อเหรียญ ${body.symbol} มีไม้เปิดอยู่\n${
+            msg: `❌ ยกเลิกการสั่งซื้อเหรียญ ${body.symbol} มีไม้เปิดอยู่\n                     ${
               checkSmcp ? `✅ ยกเลิกการตั้ง SMCP` : 'ไม่มีการตั้ง SMCP ก่อนหน้า'
             }`
           }
