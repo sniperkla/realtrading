@@ -92,9 +92,9 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           const buyit = {
             symbol: body.symbol,
             text: 'initsmcp',
-            msg: `✅ มีการสั่งซื้อ Market ${body.symbol} เข้าเงื่อนไข ${
-              checkSmcp ? 'มี SMCP เปิดอยู่' : 'ไม่มี SMCP เปิดอยู่'
-            }`
+            msg: `💎 มีการสั่งซื้อ Market ${body.symbol}\nเข้าเงื่อนไข ${
+              checkSmcp ? '1' : '0'
+            }💎 `
           }
           await lineNotifyPost.postLineNotify(buyit)
           await mainCalLeverage(body, res, margin)
@@ -108,11 +108,11 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
             const buyit = {
               symbol: body.symbol,
               text: 'initpearson',
-              msg: `✅ มีการสั่งซื้อ Market ${
+              msg: `💎 มีการสั่งซื้อ Market ${
                 body.symbol
-              } เข้าเงื่อนไข BTP Trend : ${
+              }\nเข้าเงื่อนไข BTP Trend : ${
                 pearson?.BTP >= 0 ? '+' : '-'
-              }\nMarket side : ${bodyq.side}`
+              }\nMarket side : ${bodyq.side} 💎`
             }
             await lineNotifyPost.postLineNotify(buyit)
             await mainCalLeverage(body, res, margin)
@@ -122,9 +122,9 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
               text: 'donotbuying',
               msg: `❌ ${body.symbol} ไม่เข้าเงื่อนไข BTP Trend : ${
                 pearson?.BTP >= 0 ? '+' : '-'
-              } และ ${
-                checkSmcp ? 'มี SMCP' : 'ไม่มี SMCP เปิดอยู่'
-              }\nMarket side : ${bodyq.side}`
+              }\nSMCP : ${
+                checkSmcp ? '1' : '0'
+              }\nMarket side : ${bodyq.side} ❌`
             }
             await lineNotifyPost.postLineNotify(buyit)
           }
