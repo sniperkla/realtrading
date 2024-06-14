@@ -135,7 +135,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           const buyit = {
             symbol: body.symbol,
             text: 'donotbuying',
-            msg: `❌ ยกเลิกการสั่งซื้อเหรียญ ${body.symbol} มีไม้เปิดอยู่\n                     ${
+            msg: `❌ ยกเลิกการสั่งซื้อ\nเหรียญ ${body.symbol} มีไม้เปิดอยู่\n                     ${
               checkSmcp ? `✅ ยกเลิกการตั้ง SMCP` : 'ไม่มีการตั้ง SMCP ก่อนหน้า'
             }`
           }
