@@ -100,7 +100,9 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
             text: 'initsmcp',
             msg: `💎 มีการสั่งซื้อ Market ${
               body.symbol
-            }\n                     เข้าเงื่อนไข ${checkSmcp ? '1' : '0'} 💎`
+            }\n                     เข้าเงื่อนไข SMCP:${
+              checkSmcp ? '1' : '0'
+            } 💎`
           }
           await lineNotifyPost.postLineNotify(buyit)
           await mainCalLeverage(body, res, margin)
