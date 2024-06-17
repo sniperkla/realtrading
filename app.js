@@ -42,6 +42,12 @@ mongoose
 let bodyq = null
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
+    // const x = await apiBinance.getPositionRisk(
+    //   'BTCUSDT',
+    //   get.API_KEY[0],
+    //   get.SECRET_KEY[0]
+    // )
+    // console.log('xxx', x)
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
@@ -92,9 +98,9 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           const buyit = {
             symbol: body.symbol,
             text: 'initsmcp',
-            msg: `💎 มีการสั่งซื้อ Market ${body.symbol}\n                     เข้าเงื่อนไข ${
-              checkSmcp ? '1' : '0'
-            } 💎`
+            msg: `💎 มีการสั่งซื้อ Market ${
+              body.symbol
+            }\n                     เข้าเงื่อนไข ${checkSmcp ? '1' : '0'} 💎`
           }
           await lineNotifyPost.postLineNotify(buyit)
           await mainCalLeverage(body, res, margin)
@@ -135,7 +141,9 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           const buyit = {
             symbol: body.symbol,
             text: 'donotbuying',
-            msg: `❌ ยกเลิกการสั่งซื้อ\nเหรียญ ${body.symbol} มีไม้เปิดอยู่\n                     ${
+            msg: `❌ ยกเลิกการสั่งซื้อ\nเหรียญ ${
+              body.symbol
+            } มีไม้เปิดอยู่\n                     ${
               checkSmcp ? `✅ ยกเลิกการตั้ง SMCP` : 'ไม่มีการตั้ง SMCP ก่อนหน้า'
             }`
           }
