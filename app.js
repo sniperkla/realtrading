@@ -153,13 +153,11 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
         }
       }
     }
-    setTimeout(async () => {
-      const buyit = {
-        text: 'debug',
-        msg: `${JSON.stringify(bodyq)}`
-      }
-      await lineNotifyPost.postLineNotify(buyit)
-    }, 1000)
+    const buyit = {
+      text: 'debug',
+      msg: `${JSON.stringify(bodyq)}`
+    }
+    await lineNotifyPost.postLineNotify(buyit)
     return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
   } catch (error) {}
 })
@@ -286,8 +284,8 @@ const checkStopLoss = async (body) => {
           get.API_KEY[0],
           get.SECRET_KEY[0]
         )
-        const unPNL = getAccountInfo?.totalUnrealizedProfit
-        const margin = getAccountInfo?.totalMarginBalance
+        const unPNL = getAccountInfo?.totalUnrealizedProfit || 'error'
+        const margin = getAccountInfo?.totalMarginBalance || 'error'
         const buyit = {
           symbol: symbol,
           text: 'updatestoploss',
