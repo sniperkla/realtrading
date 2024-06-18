@@ -286,8 +286,8 @@ const checkStopLoss = async (body) => {
           get.API_KEY[0],
           get.SECRET_KEY[0]
         )
-        const unPNL = getAccountInfo.totalUnrealizedProfit
-        const margin = getAccountInfo.totalMarginBalance
+        const unPNL = getAccountInfo?.totalUnrealizedProfit
+        const margin = getAccountInfo?.totalMarginBalance
         const buyit = {
           symbol: symbol,
           text: 'updatestoploss',
