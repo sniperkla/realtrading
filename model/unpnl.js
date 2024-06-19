@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
-const Pnl = new Schema(
+const lastestPnl = new Schema(
   {
     symbol: { type: String },
     unrealizePnL: { type: Number, default: 0 },
@@ -12,4 +12,4 @@ const Pnl = new Schema(
   }
 )
 
-module.exports = mongoose.model('Pnl', Pnl)
+module.exports = mongoose.model('lastestPnl', lastestPnl)

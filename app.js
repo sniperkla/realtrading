@@ -43,11 +43,11 @@ let bodyq = null
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
     // const x = await apiBinance.getPositionRisk(
-    //   'BTCUSDT',
+    //   '1000FLOKIUSDT',
     //   get.API_KEY[0],
     //   get.SECRET_KEY[0]
     // )
-    // console.log('xxx', x)
+    // console.log('xxx', x.unRealizedProfit)
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
