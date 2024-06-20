@@ -42,12 +42,6 @@ mongoose
 let bodyq = null
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
-    // const x = await apiBinance.getPositionRisk(
-    //   '1000FLOKIUSDT',
-    //   get.API_KEY[0],
-    //   get.SECRET_KEY[0]
-    // )
-    // console.log('xxx', x.unRealizedProfit)
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
@@ -98,7 +92,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           const buyit = {
             symbol: body.symbol,
             text: 'initsmcp',
-            msg: `💎 มีการสั่งซื้อ Market ${
+            msg: `\n                     💎 มีการสั่งซื้อ Market ${
               body.symbol
             }\n                     เข้าเงื่อนไข SMCP:${
               checkSmcp ? '1' : '0'
@@ -116,7 +110,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
             const buyit = {
               symbol: body.symbol,
               text: 'initpearson',
-              msg: `💎 มีการสั่งซื้อ Market ${
+              msg: `\n                     💎 มีการสั่งซื้อ Market ${
                 body.symbol
               }\n                     เข้าเงื่อนไข BTP Trend : ${
                 pearson?.BTP >= 0 ? '+' : '-'
@@ -128,7 +122,9 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
             const buyit = {
               symbol: body.symbol,
               text: 'donotbuying',
-              msg: `❌ ${body.symbol} ไม่เข้าเงื่อนไข BTP Trend : ${
+              msg: `\n                     ❌ ${
+                body.symbol
+              } ไม่เข้าเงื่อนไข BTP Trend : ${
                 pearson?.BTP >= 0 ? '+' : '-'
               }\n                     SMCP : ${
                 checkSmcp ? '1' : '0'
@@ -143,7 +139,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           const buyit = {
             symbol: body.symbol,
             text: 'donotbuying',
-            msg: `❌ ยกเลิกการสั่งซื้อ\nเหรียญ ${
+            msg: `\n                     ❌ ยกเลิกการสั่งซื้อ\nเหรียญ ${
               body.symbol
             } มีไม้เปิดอยู่\n                     ${
               checkSmcp ? `✅ ยกเลิกการตั้ง SMCP` : 'ไม่มีการตั้ง SMCP ก่อนหน้า'
@@ -223,11 +219,7 @@ const checkCondition = async (
         secretKey: get.SECRET_KEY[0]
       }
       await realEnvironment.buyingBinance(en)
-      // }
     }
-    // } else if (body.type === 'STOP_MARKET' && body.version === 'v3') {
-    //   await checkStopLoss(body)
-    // }
 
     return res.status(HTTPStatus.OK).json({ success: true, data: 'ไม่ๆๆๆ' })
   } catch (error) {}
