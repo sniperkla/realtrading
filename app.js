@@ -92,7 +92,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           const buyit = {
             symbol: body.symbol,
             text: 'initsmcp',
-            msg: `\n                     💎 มีการสั่งซื้อ Market ${
+            msg: `💎 มีการสั่งซื้อ Market ${
               body.symbol
             }\n                     เข้าเงื่อนไข SMCP:${
               checkSmcp ? '1' : '0'
@@ -110,7 +110,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
             const buyit = {
               symbol: body.symbol,
               text: 'initpearson',
-              msg: `\n                     💎 มีการสั่งซื้อ Market ${
+              msg: `💎 มีการสั่งซื้อ Market ${
                 body.symbol
               }\n                     เข้าเงื่อนไข BTP Trend : ${
                 pearson?.BTP >= 0 ? '+' : '-'
@@ -122,9 +122,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
             const buyit = {
               symbol: body.symbol,
               text: 'donotbuying',
-              msg: `\n                     ❌ ${
-                body.symbol
-              } ไม่เข้าเงื่อนไข BTP Trend : ${
+              msg: `❌ ${body.symbol} ไม่เข้าเงื่อนไข BTP Trend : ${
                 pearson?.BTP >= 0 ? '+' : '-'
               }\n                     SMCP : ${
                 checkSmcp ? '1' : '0'
@@ -139,7 +137,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           const buyit = {
             symbol: body.symbol,
             text: 'donotbuying',
-            msg: `\n                     ❌ ยกเลิกการสั่งซื้อ\nเหรียญ ${
+            msg: `❌ ยกเลิกการสั่งซื้อ\nเหรียญ ${
               body.symbol
             } มีไม้เปิดอยู่\n                     ${
               checkSmcp ? `✅ ยกเลิกการตั้ง SMCP` : 'ไม่มีการตั้ง SMCP ก่อนหน้า'
