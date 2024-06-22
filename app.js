@@ -19,7 +19,7 @@ const Smcp = require('./model/smcp')
 const Pearson = require('./model/pearsons')
 const smcpChecker = require('./lib/smcpChecker')
 const pearsonsChecker = require('./lib/pearsonChecker')
-
+const linebot = require('./lib/linebot')
 require('dotenv').config()
 
 app.use(cors())
@@ -40,6 +40,16 @@ mongoose
   .then(() => console.log('MongoDB connected successfully'))
   .catch((err) => console.error('Error connecting to MongoDB:', err))
 let bodyq = null
+app.post(`/bot_${pathName}`, async (req, res) => {
+  try {
+    const body = req.body
+
+    await linebot.messageReply(body)
+
+    return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
+  } catch (error) {}
+})
+
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
