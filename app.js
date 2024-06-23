@@ -40,6 +40,17 @@ mongoose
   .then(() => console.log('MongoDB connected successfully'))
   .catch((err) => console.error('Error connecting to MongoDB:', err))
 let bodyq = null
+
+app.post(`/sellall_${pathName}`, async (req, res) => {
+  try {
+    const body = req.body
+
+    console.log('body from sellall', body)
+
+    return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
+  } catch (error) {}
+})
+
 app.post(`/bot_${pathName}`, async (req, res) => {
   try {
     const body = req.body
