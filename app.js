@@ -43,9 +43,7 @@ let bodyq = null
 app.post(`/bot_${pathName}`, async (req, res) => {
   try {
     const body = req.body
-
     await linebot.messageReply(body)
-
     return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
   } catch (error) {}
 })
