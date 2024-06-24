@@ -69,7 +69,6 @@ const scheduleForcheckProfit = '*/30 * * * * *'
 const doCheckTakeProfit4Step = async () => {
   await cronJub.checkTakeProfit4Step(margin)
 }
-
 const doCheckMargin = async () => {
   await cronJub.check50Percent()
 }
