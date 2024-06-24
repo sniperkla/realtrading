@@ -63,14 +63,14 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
   } catch (error) {}
 })
 
-const scheduleForakeProfit4Step = '*/20 * * * * *'
-const scheduleForcheckProfit = '*/30 * * * * *'
+const scheduleForakeProfit4Step = '*/10 * * * * *'
+const scheduleForcheckProfit = '*/20 * * * * *'
 
 const doCheckTakeProfit4Step = async () => {
   await cronJub.checkTakeProfit4Step(margin)
 }
 const doCheckMargin = async () => {
-  await cronJub.check50Percent()
+  await cronJub.check50Percent(get.API_KEY[0], get.SECRET_KEY[0])
 }
 
 const task1 = cron.schedule(scheduleForakeProfit4Step, doCheckTakeProfit4Step)
