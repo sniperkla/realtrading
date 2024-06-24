@@ -45,8 +45,6 @@ app.post(`/sellall_${pathName}`, async (req, res) => {
   try {
     const body = req.body
 
-    console.log('body from sellall', body)
-
     return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
   } catch (error) {}
 })
@@ -65,7 +63,7 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
   } catch (error) {}
 })
 
-const scheduleForakeProfit4Step = '*/10 * * * * *'
+const scheduleForakeProfit4Step = '*/20 * * * * *'
 const scheduleForcheckProfit = '*/30 * * * * *'
 
 const doCheckTakeProfit4Step = async () => {
