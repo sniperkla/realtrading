@@ -20,6 +20,8 @@ const Pearson = require('./model/pearsons')
 const smcpChecker = require('./lib/smcpChecker')
 const pearsonsChecker = require('./lib/pearsonChecker')
 const linebot = require('./lib/linebot')
+const reverse = require('./lib/reverseSide')
+
 require('dotenv').config()
 
 app.use(cors())
