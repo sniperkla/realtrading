@@ -59,6 +59,7 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
+    await cronJub.everyStartDay(get.API_KEY[0], get.SECRET_KEY[0])
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
@@ -74,7 +75,7 @@ const doCheckMargin = async () => {
   await cronJub.check50Percent(get.API_KEY[0], get.SECRET_KEY[0])
 }
 const doStartDay = async () => {
-  await cronJub.check50Percent(get.API_KEY[0], get.SECRET_KEY[0])
+  await cronJub.everyStartDay(get.API_KEY[0], get.SECRET_KEY[0])
 }
 const doStart1hrPayload = async () => {
   await cronJub.every1hrPayload()
