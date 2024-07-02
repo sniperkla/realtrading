@@ -28,6 +28,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
 const mongoose = require('mongoose')
 const Martinglale = require('./model/martinglale')
+const { payloadPnl } = require('./lib/payload')
 
 const pathName = process.env.NAME
 const connectionString = `${process.env.DB}` + `${pathName}`
@@ -59,7 +60,8 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
-    await cronJub.everyStartDay(get.API_KEY[0], get.SECRET_KEY[0])
+    const message = await payloadPnl()
+    console.log('message', message)
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
