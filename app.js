@@ -68,7 +68,7 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
 
 const scheduleForakeProfit4Step = '*/10 * * * * *'
 const scheduleForcheckProfit = '*/20 * * * * *'
-const scheduleForStartDay = ' 0 0 * * *'
+const scheduleForStartDay = '* * * * *'
 const schedule1hr = '0 * * * *'
 const doCheckTakeProfit4Step = async () => {
   await cronJub.checkTakeProfit4Step(margin)
@@ -77,6 +77,11 @@ const doCheckMargin = async () => {
   await cronJub.check50Percent(get.API_KEY[0], get.SECRET_KEY[0])
 }
 const doStartDay = async () => {
+  const buyit = {
+    text: 'initsmcp',
+    msg: `💎 test every 24 hr`
+  }
+  await lineNotifyPost.postLineNotify(buyit)
   await cronJub.everyStartDay(get.API_KEY[0], get.SECRET_KEY[0])
 }
 const doStart1hrPayload = async () => {
