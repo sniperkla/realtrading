@@ -5,7 +5,8 @@ const lastestPnl = new Schema(
   {
     symbol: { type: String },
     unrealizePnL: { type: Number, default: 0 },
-    time: { type: Date, default: Date.now }
+    time: { type: Date, default: Date.now },
+    staticUnrealizePnL: { type: Number }
   },
   {
     timestamps: true
