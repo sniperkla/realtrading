@@ -76,7 +76,7 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
         { symbol: symbol },
         {
           $set: {
-            highestMargin: filteredMax
+            highestMargin: max
           }
         }
       )
