@@ -28,6 +28,8 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
 const mongoose = require('mongoose')
 const Martinglale = require('./model/martinglale')
+const MartinglaleLog = require('./model/matingalelog')
+
 const { payloadPnl } = require('./lib/payload')
 
 const pathName = process.env.NAME
@@ -60,8 +62,26 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
-    const message = await payloadPnl()
-    console.log('message', message)
+    const martingale = await Martinglale.findOne({ symbol: 'WAXUSDT' })
+    if (!martingale.highestMargin) {
+      const findmaxMartingale = await MartinglaleLog.find()
+      const filteredMax = findmaxMartingale
+        .filter((item) => item.symbol === 'WAXUSDT')
+        .reduce((prev, current) =>
+          Math.max(prev.martingale, current.martingale)
+        )
+      console.log('this is max for wax', filteredMax)
+      await Martinglale.updateOne(
+        { symbol: symbol },
+        {
+          $set: {
+            highestMargin: filteredMax
+          }
+        }
+      )
+      console.log('donee jaaa')
+    }
+
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })

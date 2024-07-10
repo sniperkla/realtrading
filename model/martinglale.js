@@ -5,7 +5,8 @@ const Martingale = new Schema(
   {
     symbol: { type: String },
     previousMargin: { type: Number },
-    stackLose: { type: Number, default: 1 }
+    stackLose: { type: Number, default: 1 },
+    highestMargin: { type: Number }
   },
   {
     timestamps: true
