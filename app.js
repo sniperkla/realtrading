@@ -78,7 +78,8 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
           $set: {
             highestMargin: max
           }
-        }
+        },
+        { upsert: true }
       )
       console.log('donee jaaa')
     }
