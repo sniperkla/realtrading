@@ -61,19 +61,19 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
     console.log('hello')
-    const martingale = await Martinglale.findOne({ symbol: 'WAXPUSDT' })
+    const martingale = await Martinglale.findOne({ symbol: 'ICXUSDT' })
     if (!martingale.highestMargin) {
       console.log('yes no mar')
       const findmaxMartingale = await MartinglaleLog.find()
 
       const max = Math.max(
         ...findmaxMartingale
-          .filter((item) => item.symbol === 'WAXPUSDT')
+          .filter((item) => item.symbol === 'ICXUSDT')
           .map((item) => item.martingale)
       )
       console.log('this is max for wax', max)
       await Martinglale.updateOne(
-        { symbol: 'WAXPUSDT' },
+        { symbol: 'ICXUSDT' },
         {
           $set: {
             highestMargin: max
