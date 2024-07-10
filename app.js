@@ -73,13 +73,12 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
       )
       console.log('this is max for wax', max)
       await Martinglale.updateOne(
-        { symbol: symbol },
+        { symbol: 'WAXPUSDT' },
         {
           $set: {
             highestMargin: max
           }
-        },
-        { upsert: true }
+        }
       )
       console.log('donee jaaa')
     }
