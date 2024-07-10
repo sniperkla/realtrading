@@ -30,8 +30,6 @@ const mongoose = require('mongoose')
 const Martinglale = require('./model/martinglale')
 const MartinglaleLog = require('./model/matingalelog')
 
-const { payloadPnl } = require('./lib/payload')
-
 const pathName = process.env.NAME
 const connectionString = `${process.env.DB}` + `${pathName}`
 const margin = process.env.MARGIN
@@ -63,7 +61,7 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
     console.log('hello')
-    const martingale = await Martinglale.findOne({ symbol: 'WAXUSDT' })
+    const martingale = await Martinglale.findOne({ symbol: 'WAXPUSDT' })
     if (!martingale.highestMargin) {
       console.log('yes no mar')
       const findmaxMartingale = await MartinglaleLog.find()
