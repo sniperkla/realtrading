@@ -65,10 +65,9 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
     if (!martingale.highestMargin) {
       console.log('yes no mar')
       const findmaxMartingale = await MartinglaleLog.find()
-      console.log('yes no mar', findmaxMartingale)
 
       const filteredMax = findmaxMartingale
-        .filter((item) => item.symbol === 'WAXUSDT')
+        .filter((item) => item.symbol === 'WAXPUSDT')
         .reduce((prev, current) =>
           Math.max(prev.martingale, current.martingale)
         )
