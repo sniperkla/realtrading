@@ -66,12 +66,12 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
       console.log('yes no mar')
       const findmaxMartingale = await MartinglaleLog.find()
 
-      const filteredMax = findmaxMartingale
-        .filter((item) => item.symbol === 'WAXPUSDT')
-        .reduce((prev, current) =>
-          Math.max(prev.martingale, current.martingale)
-        )
-      console.log('this is max for wax', filteredMax)
+      const max = Math.max(
+        ...findmaxMartingale
+          .filter((item) => item.symbol === 'WAXPUSDT')
+          .map((item) => item.martingale)
+      )
+      console.log('this is max for wax', max)
       await Martinglale.updateOne(
         { symbol: symbol },
         {
