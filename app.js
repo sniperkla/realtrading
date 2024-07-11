@@ -20,6 +20,8 @@ const Pearson = require('./model/pearsons')
 const smcpChecker = require('./lib/smcpChecker')
 const pearsonsChecker = require('./lib/pearsonChecker')
 const linebot = require('./lib/linebot')
+const lvcheck = require('./lib/levelChecker')
+
 require('dotenv').config()
 
 app.use(cors())
@@ -60,29 +62,7 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
-    console.log('hello')
-    const martingale = await Martinglale.findOne({ symbol: 'WIFUSDT' })
-    if (!martingale.highestMargin) {
-      console.log('yes no mar')
-      const findmaxMartingale = await MartinglaleLog.find()
-
-      const max = Math.max(
-        ...findmaxMartingale
-          .filter((item) => item.symbol === 'WIFUSDT')
-          .map((item) => item.martingale)
-      )
-      console.log('this is max for wax', max)
-      await Martinglale.updateOne(
-        { symbol: 'WIFUSDT' },
-        {
-          $set: {
-            highestMargin: max
-          }
-        }
-      )
-      console.log('donee jaaa')
-    }
-
+    await lvcheck.martingale()
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
