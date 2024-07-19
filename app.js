@@ -141,7 +141,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
             } 💎`
           }
           await lineNotifyPost.postLineNotify(buyit)
-          await mainCalLeverage(body, margin)
+          await mainCalLeverage(body, res, margin)
           await Smcp.deleteOne({ symbol: body.symbol })
         } else if (!checkSmcp && !data) {
           const pearson = await Pearson.findOne({ symbol: body.symbol })
@@ -437,77 +437,76 @@ const checkDataFirst = async (bodyq) => {
 }
 
 const mainCalLeverage = async (body, res, margin) => {
-  // const checkLimitMarket = await updateMarketCounter.incCounter()
-  // const limitMarket = 1000
-  // if (checkLimitMarket <= limitMarket) {
-  // const getAllOpenOrder = await apiBinance.getAllOpenOrder(
-  //   get.API_KEY[0],
-  //   get.SECRET_KEY[0]
-  // )
-  // const checkOpenOrder = getAllOpenOrder.filter((item) => {
-  //   return item.type === 'TAKE_PROFIT_MARKET' && item.closePosition === true
-  // })
-  // if (checkOpenOrder?.length < 100) {
-  const checkMarketFirst = await Log.findOne({
-    symbol: body.symbol
-  })
-  if (checkMarketFirst === null) {
-    const calLeverage = await callLeverage.leverageCal(
-      body.symbol,
-      body.priceCal,
-      body.stopPriceCal,
-      body.side,
+  const checkLimitMarket = await updateMarketCounter.incCounter()
+  const limitMarket = 1000
+  if (checkLimitMarket <= limitMarket) {
+    const getAllOpenOrder = await apiBinance.getAllOpenOrder(
       get.API_KEY[0],
-      get.SECRET_KEY[0],
-      margin
+      get.SECRET_KEY[0]
     )
-    checkCondition(
-      body,
-      res,
-      calLeverage.maximumQty,
-      calLeverage.defaultLeverage,
-      calLeverage.budget,
-      calLeverage.minimum,
-      calLeverage.openLongShort,
-      calLeverage.st,
-      calLeverage.valueAskBid,
-      calLeverage.price,
-      calLeverage.bids,
-      calLeverage.asks,
-      calLeverage.marginStart,
-      calLeverage.marginEnd,
-      calLeverage.lpStart,
-      calLeverage.lpEnd,
-      calLeverage.qtyStart,
-      calLeverage.qtyEnd,
-      calLeverage.marginEnd2,
-      calLeverage.lpEnd2,
-      calLeverage.qtyEnd2,
-      calLeverage.priceCal,
-      calLeverage.running
-    )
+    const checkOpenOrder = getAllOpenOrder.filter((item) => {
+      return item.type === 'TAKE_PROFIT_MARKET' && item.closePosition === true
+    })
+    if (checkOpenOrder?.length < 100) {
+      const checkMarketFirst = await Log.findOne({
+        symbol: body.symbol
+      })
+      if (checkMarketFirst === null) {
+        const calLeverage = await callLeverage.leverageCal(
+          body.symbol,
+          body.priceCal,
+          body.stopPriceCal,
+          body.side,
+          get.API_KEY[0],
+          get.SECRET_KEY[0],
+          margin
+        )
+        checkCondition(
+          body,
+          res,
+          calLeverage.maximumQty,
+          calLeverage.defaultLeverage,
+          calLeverage.budget,
+          calLeverage.minimum,
+          calLeverage.openLongShort,
+          calLeverage.st,
+          calLeverage.valueAskBid,
+          calLeverage.price,
+          calLeverage.bids,
+          calLeverage.asks,
+          calLeverage.marginStart,
+          calLeverage.marginEnd,
+          calLeverage.lpStart,
+          calLeverage.lpEnd,
+          calLeverage.qtyStart,
+          calLeverage.qtyEnd,
+          calLeverage.marginEnd2,
+          calLeverage.lpEnd2,
+          calLeverage.qtyEnd2,
+          calLeverage.priceCal,
+          calLeverage.running
+        )
+      } else {
+        await updateMarketCounter.deleteCounter()
+        console.log('arleady have market')
+      }
+    } else {
+      const buyit = {
+        text: 'overTrade',
+        msg: `เกินลิมิตเทรด > ${checkOpenOrder.length} | ชื่อเหรียญ : ${body.symbol}`
+      }
+      await lineNotifyPost.postLineNotify(buyit)
+      await updateMarketCounter.deleteCounter()
+    }
   } else {
+    const buyit = {
+      text: 'overTrade',
+      msg: `กำลังคำนวณ Market เหลืออีก ${checkLimitMarket} Quene`
+    }
+    await lineNotifyPost.postLineNotify(buyit)
     await updateMarketCounter.deleteCounter()
-    console.log('arleady have market')
   }
 }
-// } else {
-//   const buyit = {
-//     text: 'overTrade',
-//     msg: `เกินลิมิตเทรด > ${checkOpenOrder.length} | ชื่อเหรียญ : ${body.symbol}`
-//   }
-//   await lineNotifyPost.postLineNotify(buyit)
-//   await updateMarketCounter.deleteCounter()
-// }
-// } else {
-//   const buyit = {
-//     text: 'overTrade',
-//     msg: `กำลังคำนวณ Market เหลืออีก ${checkLimitMarket} Quene`
-//   }
-//   await lineNotifyPost.postLineNotify(buyit)
-//   await updateMarketCounter.deleteCounter()
-// }
-// }
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
