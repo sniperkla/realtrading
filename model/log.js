@@ -11,7 +11,8 @@ const Log = new Schema(
     time: { type: Date, default: Date.now },
     binanceTakeProfit: { type: Object },
     binanceMarket: { type: Object },
-    binanceStopLoss: { type: Object }
+    binanceStopLoss: { type: Object },
+    stopLossType: { type: String }
   },
   {
     timestamps: true
