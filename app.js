@@ -101,7 +101,6 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
     console.log('this is body outsides', bodyq)
 
     if (bodyq.STP) {
-      console.log('this is body', bodyq)
       await pearsonsChecker.pearsonChecker(
         bodyq,
         get.API_KEY[0],
