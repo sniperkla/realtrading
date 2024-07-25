@@ -1,7 +1,7 @@
 const express = require('express')
 const HTTPStatus = require('http-status')
 const app = express()
-const port = 3070
+const port = 3090
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const Trading = require('./model/trading')
@@ -13,9 +13,7 @@ const realEnvironment = require('./lib/realEnv')
 const combine = require('./lib/combineUser')
 const cron = require('node-cron')
 const cronJub = require('./lib/cronJob')
-const Smcp = require('./model/smcp')
 const Pearson = require('./model/pearsons')
-const smcpChecker = require('./lib/smcpChecker')
 const pearsonsChecker = require('./lib/pearsonChecker')
 const linebot = require('./lib/linebot')
 const lvcheck = require('./lib/levelChecker')
@@ -100,9 +98,7 @@ task4.start()
 app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
     let bodyq = req.body
-    if (bodyq.SMCP) {
-      await smcpChecker.smcpCheck(bodyq, get.API_KEY[0], get.SECRET_KEY[0], res)
-    } else if (bodyq.STP) {
+    if (bodyq.STP) {
       await pearsonsChecker.pearsonChecker(
         bodyq,
         get.API_KEY[0],
@@ -119,7 +115,6 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
         //first check before buy
         await cronJub.checkTakeProfit4Step(margin)
         const martingale = await Martinglale.findOne({ symbol: body.symbol })
-        const checkSmcp = await Smcp.findOne({ symbol: body.symbol })
         const data = await Log.findOne({ symbol: body.symbol })
         if (!martingale) {
           await Martinglale.create({
@@ -128,20 +123,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
             previousMargin: margin
           })
         }
-        if (checkSmcp && !data) {
-          const buyit = {
-            symbol: body.symbol,
-            text: 'initsmcp',
-            msg: `💎 มีการสั่งซื้อ Market ${
-              body.symbol
-            }\n                     เข้าเงื่อนไข SMCP:${
-              checkSmcp ? '1' : '0'
-            } 💎`
-          }
-          await lineNotifyPost.postLineNotify(buyit)
-          await mainCalLeverage(body, margin)
-          await Smcp.deleteOne({ symbol: body.symbol })
-        } else if (!checkSmcp && !data) {
+        if (!data) {
           const pearson = await Pearson.findOne({ symbol: body.symbol })
           if (
             (pearson?.STP >= 0 && bodyq.side === 'BUY' && !data) ||
@@ -164,26 +146,12 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
               text: 'donotbuying',
               msg: `❌ ${body.symbol} ไม่เข้าเงื่อนไข STP Trend : ${
                 pearson?.STP >= 0 ? '+' : '-'
-              }\n                     SMCP : ${
-                checkSmcp ? '1' : '0'
-              }\n                     Market side : ${bodyq.side} ❌`
+              }\n                    \n                     Market side : ${
+                bodyq.side
+              } ❌`
             }
             await lineNotifyPost.postLineNotify(buyit)
           }
-        } else {
-          if (checkSmcp) {
-            await Smcp.deleteOne({ symbol: body.symbol })
-          }
-          const buyit = {
-            symbol: body.symbol,
-            text: 'donotbuying',
-            msg: `❌ ยกเลิกการสั่งซื้อ\nเหรียญ ${
-              body.symbol
-            } มีไม้เปิดอยู่\n                     ${
-              checkSmcp ? `✅ ยกเลิกการตั้ง SMCP` : 'ไม่มีการตั้ง SMCP ก่อนหน้า'
-            }`
-          }
-          await lineNotifyPost.postLineNotify(buyit)
         }
       }
     }
