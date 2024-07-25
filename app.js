@@ -98,7 +98,6 @@ task4.start()
 app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
     let bodyq = req.body
-    console.log('this is body outsides', bodyq)
 
     if (bodyq.STP) {
       await pearsonsChecker.pearsonChecker(
