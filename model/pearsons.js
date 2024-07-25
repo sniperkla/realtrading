@@ -3,7 +3,7 @@ const Schema = mongoose.Schema
 
 const Pearson = new Schema(
   {
-    BTP: { type: Number },
+    STP: { type: Number },
     pricecal: { type: String },
     version: { type: String },
     symbol: { type: String }

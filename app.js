@@ -102,7 +102,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
     let bodyq = req.body
     if (bodyq.SMCP) {
       await smcpChecker.smcpCheck(bodyq, get.API_KEY[0], get.SECRET_KEY[0], res)
-    } else if (bodyq.BTP) {
+    } else if (bodyq.STP) {
       await pearsonsChecker.pearsonChecker(
         bodyq,
         get.API_KEY[0],
@@ -144,16 +144,16 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
         } else if (!checkSmcp && !data) {
           const pearson = await Pearson.findOne({ symbol: body.symbol })
           if (
-            (pearson?.BTP >= 0 && bodyq.side === 'BUY' && !data) ||
-            (pearson?.BTP <= 0 && bodyq.side === 'SELL' && !data)
+            (pearson?.STP >= 0 && bodyq.side === 'BUY' && !data) ||
+            (pearson?.STP <= 0 && bodyq.side === 'SELL' && !data)
           ) {
             const buyit = {
               symbol: body.symbol,
               text: 'initpearson',
               msg: `💎 มีการสั่งซื้อ Market ${
                 body.symbol
-              }\n                     เข้าเงื่อนไข BTP Trend : ${
-                pearson?.BTP >= 0 ? '+' : '-'
+              }\n                     เข้าเงื่อนไข STP Trend : ${
+                pearson?.STP >= 0 ? '+' : '-'
               }\n                     Market side : ${bodyq.side} 💎`
             }
             await lineNotifyPost.postLineNotify(buyit)
@@ -162,8 +162,8 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
             const buyit = {
               symbol: body.symbol,
               text: 'donotbuying',
-              msg: `❌ ${body.symbol} ไม่เข้าเงื่อนไข BTP Trend : ${
-                pearson?.BTP >= 0 ? '+' : '-'
+              msg: `❌ ${body.symbol} ไม่เข้าเงื่อนไข STP Trend : ${
+                pearson?.STP >= 0 ? '+' : '-'
               }\n                     SMCP : ${
                 checkSmcp ? '1' : '0'
               }\n                     Market side : ${bodyq.side} ❌`
