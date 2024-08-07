@@ -125,7 +125,8 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           await Martinglale.create({
             symbol: body.symbol,
             stackLose: 1,
-            previousMargin: margin
+            previousMargin: margin,
+            active: true
           })
         }
         if (checkSmcp && !data) {
