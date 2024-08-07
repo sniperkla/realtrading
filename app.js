@@ -6,6 +6,8 @@ const cors = require('cors')
 const bodyParser = require('body-parser')
 const Trading = require('./model/trading')
 const Log = require('./model/log')
+const Bos = require('./model/bos')
+
 const lineNotifyPost = require('./lib/lineNotifyPost')
 const apiBinance = require('./lib/apibinance')
 const callLeverage = require('./lib/calLeverage')
@@ -13,10 +15,9 @@ const realEnvironment = require('./lib/realEnv')
 const combine = require('./lib/combineUser')
 const cron = require('node-cron')
 const cronJub = require('./lib/cronJob')
-const Pearson = require('./model/pearsons')
-const pearsonsChecker = require('./lib/pearsonChecker')
 const linebot = require('./lib/linebot')
 const lvcheck = require('./lib/levelChecker')
+const checkBos = require('./lib/checkBos')
 
 require('dotenv').config()
 
@@ -58,7 +59,7 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
-    await lvcheck.martingale()
+    await cronJub.checkBoss1min()
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
@@ -98,64 +99,82 @@ task4.start()
 app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
     let bodyq = req.body
+    console.log('bodyq', bodyq)
+    let body = await checkDataFirst(bodyq)
+    const symbol = bodyq.symbol.replace(/\.P$/, '')
+    if (body.type === 'STOP_MARKET' && bodyq?.version === 'v3.1') {
+      await checkStopLoss(body)
+    }
+    if (bodyq?.takeProfit || bodyq?.stopPriceCal || bodyq?.priceCal) {
+      setTimeout(async () => {
+        // wait for bos na jaa
+        bodyq?.takeProfit
+          ? await Bos.findOneAndUpdate(
+              { symbol: symbol },
+              { takeProfit: { value: bodyq?.takeProfit, date: Date.now() } },
+              { upsert: true }
+            )
+          : bodyq?.stopPriceCal
+          ? await Bos.findOneAndUpdate(
+              { symbol: symbol },
+              {
+                stopPriceCal: { value: bodyq?.stopPriceCal, date: Date.now() }
+              },
+              { upsert: true }
+            )
+          : await Bos.findOneAndUpdate(
+              { symbol: symbol },
+              { priceCal: { value: bodyq?.priceCal, date: Date.now() } },
+              { upsert: true }
+            )
+        const checkBoss = await checkBos.togleBos(symbol)
 
-    if (bodyq.STP) {
-      await pearsonsChecker.pearsonChecker(
-        bodyq,
-        get.API_KEY[0],
-        get.SECRET_KEY[0],
-        res
-      )
-    } else {
-      let body = await checkDataFirst(bodyq)
-      if (body.type === 'STOP_MARKET' && bodyq?.version === 'v3.1') {
-        await checkStopLoss(body)
+        if (checkBoss) {
+          console.log('success buying via limit jaa')
+        } else {
+          console.log('somthing wrong')
+        }
+      }, 3000)
+    }
+    if (bodyq?.BOS) {
+      const checkBoss = await Bos.findOne({ symbol: symbol })
+      if (!checkBoss)
+        await Bos.create({
+          symbol: symbol,
+          side: bodyq.BOS,
+          status: true,
+          bosDate: Date.now()
+        })
+      else
+        await Bos.findOneAndUpdate(
+          {
+            symbol: symbol
+          },
+          { side: bodyq.BOS, status: true, bosDate: Date.now() },
+          { upsert: true }
+        )
+      await checkBos.togleBos(symbol)
+      //first check before buy
+      await cronJub.checkTakeProfit4Step(margin)
+      const martingale = await Martinglale.findOne({ symbol: symbol })
+      const data = await Log.findOne({ symbol: symbol })
+      if (!martingale) {
+        await Martinglale.create({
+          symbol: symbol,
+          stackLose: 1,
+          previousMargin: margin
+        })
       }
 
-      if (body?.type === 'MARKET' && bodyq?.version === 'v3.1') {
-        //first check before buy
-        await cronJub.checkTakeProfit4Step(margin)
-        const martingale = await Martinglale.findOne({ symbol: body.symbol })
-        const data = await Log.findOne({ symbol: body.symbol })
-        if (!martingale) {
-          await Martinglale.create({
-            symbol: body.symbol,
-            stackLose: 1,
-            previousMargin: margin
-          })
-        }
-        if (!data) {
-          const pearson = await Pearson.findOne({ symbol: body.symbol })
-          if (
-            (pearson?.STP >= 0 && bodyq.side === 'BUY' && !data) ||
-            (pearson?.STP <= 0 && bodyq.side === 'SELL' && !data)
-          ) {
-            const buyit = {
-              symbol: body.symbol,
-              text: 'initpearson',
-              msg: `💎 มีการสั่งซื้อ Market ${
-                body.symbol
-              }\n                     เข้าเงื่อนไข STP Trend : ${
-                pearson?.STP >= 0 ? '+' : '-'
-              }\n                     Market side : ${bodyq.side} 💎`
-            }
-            await lineNotifyPost.postLineNotify(buyit)
-            await mainCalLeverage(body, margin)
-          } else {
-            const buyit = {
-              symbol: body.symbol,
-              text: 'donotbuying',
-              msg: `❌ ${body.symbol} ไม่เข้าเงื่อนไข STP Trend : ${
-                pearson?.STP >= 0 ? '+' : '-'
-              }\n                    \n                     Market side : ${
-                bodyq.side
-              } ❌`
-            }
-            await lineNotifyPost.postLineNotify(buyit)
-          }
+      if (!data) {
+        const buyit = {
+          symbol: symbol,
+          text: 'initpearson',
+          msg: `💎เข้าเงื่อนไข BOS: ${symbol}\n           Market side : ${bodyq?.BOS} 💎`
         }
       }
     }
+
     const buyit = {
       text: 'debug',
       msg: `${JSON.stringify(bodyq)}`
