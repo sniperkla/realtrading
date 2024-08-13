@@ -114,34 +114,36 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
       await checkStopLoss(body)
     }
     if (bodyq?.takeProfit || bodyq?.stopPriceCal || bodyq?.priceCal) {
-      setTimeout(async () => {
-        // wait for bos na jaa
-        bodyq?.takeProfit
-          ? await Bos.findOneAndUpdate(
-              { symbol: symbol },
-              { takeProfit: { value: bodyq?.takeProfit, date: Date.now() } },
-              { upsert: true }
-            )
-          : bodyq?.stopPriceCal
-          ? await Bos.findOneAndUpdate(
-              { symbol: symbol },
-              {
-                stopPriceCal: { value: bodyq?.stopPriceCal, date: Date.now() }
-              },
-              { upsert: true }
-            )
-          : await Bos.findOneAndUpdate(
-              { symbol: symbol },
-              { priceCal: { value: bodyq?.priceCal, date: Date.now() } },
-              { upsert: true }
-            )
-        const checkBoss = await checkBos.togleBos(symbol)
-        if (checkBoss) {
-          console.log('success buying via limit jaa')
-        } else {
-          console.log('somthing wrong')
-        }
-      }, 3500)
+      if (!bodyq?.version) {
+        setTimeout(async () => {
+          // wait for bos na jaa
+          bodyq?.takeProfit
+            ? await Bos.findOneAndUpdate(
+                { symbol: symbol },
+                { takeProfit: { value: bodyq?.takeProfit, date: Date.now() } },
+                { upsert: true }
+              )
+            : bodyq?.stopPriceCal
+            ? await Bos.findOneAndUpdate(
+                { symbol: symbol },
+                {
+                  stopPriceCal: { value: bodyq?.stopPriceCal, date: Date.now() }
+                },
+                { upsert: true }
+              )
+            : await Bos.findOneAndUpdate(
+                { symbol: symbol },
+                { priceCal: { value: bodyq?.priceCal, date: Date.now() } },
+                { upsert: true }
+              )
+          const checkBoss = await checkBos.togleBos(symbol)
+          if (checkBoss) {
+            console.log('success buying via limit jaa')
+          } else {
+            console.log('somthing wrong')
+          }
+        }, 3500)
+      }
     }
     if (bodyq?.BOS) {
       const checkBoss = await Bos.findOne({ symbol: symbol })
@@ -149,7 +151,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
         await Bos.create({
           symbol: symbol,
           side: bodyq.BOS,
-          status: true,
+          status: 'NEW',
           bosDate: Date.now()
         })
       else
