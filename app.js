@@ -1,7 +1,7 @@
 const express = require('express')
 const HTTPStatus = require('http-status')
 const app = express()
-const port = 3090
+const port = 3070
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const Trading = require('./model/trading')
@@ -59,18 +59,25 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
-    await cronJub.checkBoss1min()
+    await cronJub.checkOpenOrder4Bos()
+    //   await cronJub.checkBoss1min()
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
 
 const scheduleForakeProfit4Step = '*/30 * * * * *'
 const scheduleForcheckProfit = '*/20 * * * * *'
+const scheduleForcheckBos1Min = '*/13 * * * * *'
 const scheduleForStartDay = '0 0 * * *'
 const schedule1hr = '0 * * * *'
 const doCheckTakeProfit4Step = async () => {
   await cronJub.checkTakeProfit4Step(margin)
 }
+
+const doCheckBos1Min = async () => {
+  await cronJub.checkOpenOrder4Bos()
+}
+
 const doCheckMargin = async () => {
   await cronJub.check50Percent(get.API_KEY[0], get.SECRET_KEY[0])
 }
@@ -90,16 +97,17 @@ const task1 = cron.schedule(scheduleForakeProfit4Step, doCheckTakeProfit4Step)
 const task2 = cron.schedule(scheduleForcheckProfit, doCheckMargin)
 const task3 = cron.schedule(scheduleForStartDay, doStartDay)
 const task4 = cron.schedule(schedule1hr, doStart1hrPayload)
+const task5 = cron.schedule(scheduleForcheckBos1Min, doCheckBos1Min)
 
 task1.start()
 task2.start()
 task3.start()
 task4.start()
+task5.start()
 
 app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
     let bodyq = req.body
-    console.log('bodyq', bodyq)
     let body = await checkDataFirst(bodyq)
     const symbol = bodyq.symbol.replace(/\.P$/, '')
     if (body.type === 'STOP_MARKET' && bodyq?.version === 'v3.1') {
@@ -128,13 +136,12 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
               { upsert: true }
             )
         const checkBoss = await checkBos.togleBos(symbol)
-
         if (checkBoss) {
           console.log('success buying via limit jaa')
         } else {
           console.log('somthing wrong')
         }
-      }, 3000)
+      }, 3500)
     }
     if (bodyq?.BOS) {
       const checkBoss = await Bos.findOne({ symbol: symbol })

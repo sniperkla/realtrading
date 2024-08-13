@@ -17,7 +17,7 @@ const Bos = new Schema(
       value: { type: String },
       date: { type: Number }
     },
-    status: { type: Boolean },
+    status: { type: String, default: 'NEW' },
     bosDate: { type: Number }
   },
   {

@@ -8,7 +8,7 @@ const LogBos = new Schema(
     takeProfit: { type: String },
     stopPriceCal: { type: String },
     priceCal: { type: String },
-    status: { type: Boolean }
+    status: { type: String }
   },
   {
     timestamps: true
