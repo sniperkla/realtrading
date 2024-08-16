@@ -142,7 +142,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           } else {
             console.log('somthing wrong')
           }
-        }, 3500)
+        }, 10000)
       }
     }
     if (bodyq?.BOS) {
@@ -269,7 +269,7 @@ const checkStopLoss = async (body) => {
     })
 
     const check = await Log.findOne({
-      'symbol': symbol,
+      symbol: symbol,
       'binanceStopLoss.symbol': symbol
     })
 
