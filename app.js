@@ -59,8 +59,7 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
-    await cronJub.checkOpenOrder4Bos()
-    //   await cronJub.checkBoss1min()
+    await cronJub.checkBoss1min()
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
@@ -75,6 +74,7 @@ const doCheckTakeProfit4Step = async () => {
 }
 
 const doCheckBos1Min = async () => {
+  await cronJub.checkBoss1min()
   await cronJub.checkOpenOrder4Bos()
 }
 
@@ -136,12 +136,6 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
                 { priceCal: { value: bodyq?.priceCal, date: Date.now() } },
                 { upsert: true }
               )
-          const checkBoss = await checkBos.togleBos(symbol)
-          if (checkBoss) {
-            console.log('success buying via limit jaa')
-          } else {
-            console.log('somthing wrong')
-          }
         }, 10000)
       }
     }
