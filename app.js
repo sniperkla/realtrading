@@ -153,7 +153,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           {
             symbol: symbol
           },
-          { side: bodyq.BOS, status: true, bosDate: Date.now() },
+          { side: bodyq.BOS, status: 'NEW', bosDate: Date.now() },
           { upsert: true }
         )
       await checkBos.togleBos(symbol)
