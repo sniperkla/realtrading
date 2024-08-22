@@ -6,15 +6,15 @@ const Bos = new Schema(
     symbol: { type: String },
     side: { type: String },
     takeProfit: {
-      value: { type: String },
+      value: { type: Number },
       date: { type: Number }
     },
     stopPriceCal: {
-      value: { type: String },
+      value: { type: Number },
       date: { type: Number }
     },
     priceCal: {
-      value: { type: String },
+      value: { type: Number },
       date: { type: Number }
     },
     status: { type: String, default: 'NEW' },
