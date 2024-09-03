@@ -126,18 +126,22 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
     }
     if (bodyq?.takeProfit || bodyq?.stopPriceCal || bodyq?.priceCal) {
       if (!bodyq?.version) {
-        const previous = await Bos.findOne({ symbol: symbol })
-        previous?.priceCal?.value &&
-          (await Bos.findOneAndUpdate(
-            { symbol: symbol },
-            {
-              changePriceCal:
-                bodyq?.priceCal !== previous?.priceCal?.value ? true : false
-            },
-            {
-              upsert: true
-            }
-          ))
+        if (bodyq?.priceCal) {
+          const previous = await Bos.findOne({ symbol: symbol })
+          previous?.priceCal?.value &&
+            (await Bos.findOneAndUpdate(
+              { symbol: symbol },
+              {
+                changePriceCal:
+                  bodyq?.priceCal === previous?.priceCal?.value.toString()
+                    ? false
+                    : true
+              },
+              {
+                upsert: true
+              }
+            ))
+        }
         //check current priceCal
         setTimeout(async () => {
           // wait for bos na jaa
