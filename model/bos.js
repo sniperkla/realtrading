@@ -18,8 +18,7 @@ const Bos = new Schema(
       date: { type: Number }
     },
     currentPriceCal: {
-      value: { type: Number },
-      date: { type: Number }
+      type: Number
     },
     status: { type: String, default: 'NEW' },
     bosDate: { type: Number }
