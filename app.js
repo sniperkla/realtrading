@@ -153,24 +153,25 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
     }
     if (bodyq?.BOS) {
       const checkBoss = await Bos.findOne({ symbol: symbol })
-      if (!checkBoss)
+      if (!checkBoss) {
         await Bos.create({
           symbol: symbol,
           side: bodyq.BOS,
           status: 'NEW',
           bosDate: Date.now()
         })
-      else
+      } else {
         await Bos.findOneAndUpdate(
           {
             symbol: symbol
           },
-          { side: bodyq.BOS, status: 'NEW', bosDate: Date.now() },
+          { side: bodyq.BOS, bosDate: Date.now() },
           { upsert: true }
         )
-      await checkBos.togleBos(symbol)
+      }
+       await checkBos.togleBos(symbol)
       //first check before buy
-      await cronJub.checkTakeProfit4Step(margin)
+      // await cronJub.checkTakeProfit4Step(margin)
       const martingale = await Martinglale.findOne({ symbol: symbol })
       const data = await Log.findOne({ symbol: symbol })
       if (!martingale) {
