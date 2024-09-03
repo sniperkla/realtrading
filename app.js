@@ -154,7 +154,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
                 { upsert: true }
               )
             : Number(bodyq?.priceCal).toFixed(fixdecs?.dec) !==
-              previous?.priceCal
+              previous?.priceCal?.value
             ? await Bos.findOneAndUpdate(
                 { symbol: symbol },
                 { currentPriceCal: bodyq?.priceCal },
@@ -166,7 +166,9 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
                 { symbol: symbol },
                 {
                   priceCal: { value: bodyq?.priceCal, date: Date.now() },
-                  currentPriceCal: bodyq?.priceCal
+                  currentPriceCal: parseFloat(bodyq?.priceCal).toFixed(
+                    fixdecs?.dec
+                  )
                 },
                 { upsert: true }
               )
