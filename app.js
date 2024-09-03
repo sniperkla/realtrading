@@ -150,22 +150,17 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
                 },
                 { upsert: true }
               )
-            : bodyq?.priceCal !== previous?.priceCal?.value
-            ? await Bos.findOneAndUpdate(
+            : bodyq?.priceCal !== previous?.priceCal?.value &&
+              (await Bos.findOneAndUpdate(
                 { symbol: symbol },
-                { currentPriceCal: bodyq?.priceCal },
+                {
+                  currentPriceCal: bodyq?.priceCal,
+                  priceCal: { value: bodyq?.priceCal, date: Date.now() }
+                },
                 {
                   upsert: true
                 }
-              )
-            : await Bos.findOneAndUpdate(
-                { symbol: symbol },
-                {
-                  priceCal: { value: bodyq?.priceCal, date: Date.now() },
-                  currentPriceCal: bodyq?.priceCal
-                },
-                { upsert: true }
-              )
+              ))
         }, 10000)
       }
     }
