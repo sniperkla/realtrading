@@ -28,8 +28,6 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
 const mongoose = require('mongoose')
 const Martinglale = require('./model/martinglale')
-const fixdec = require('./model/fixdec')
-const fixdec = require('./model/fixdec')
 
 const pathName = process.env.NAME
 const connectionString = `${process.env.DB}` + `${pathName}`
@@ -130,8 +128,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
       if (!bodyq?.version) {
         //check current priceCal
         const previous = await Bos.findOne({ symbol: symbol })
-        const fixdecs = await fixdec.findOne({ symbol: symbol })
-
+        const fixdecs = await Fixdec.findOne({ symbol: symbol })
         setTimeout(async () => {
           // wait for bos na jaa
           bodyq?.takeProfit
