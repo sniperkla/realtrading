@@ -126,9 +126,18 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
     }
     if (bodyq?.takeProfit || bodyq?.stopPriceCal || bodyq?.priceCal) {
       if (!bodyq?.version) {
-        //check current priceCal
         const previous = await Bos.findOne({ symbol: symbol })
-        const fixdecs = await Fixdec.findOne({ symbol: symbol })
+        if (bodyq?.priceCal !== previous?.priceCal?.value)
+          await Bos.findOneAndUpdate(
+            { symbol: symbol },
+            {
+              currentPriceCal: bodyq?.priceCal
+            },
+            {
+              upsert: true
+            }
+          )
+        //check current priceCal
         setTimeout(async () => {
           // wait for bos na jaa
           bodyq?.takeProfit
@@ -150,11 +159,10 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
                 },
                 { upsert: true }
               )
-            : bodyq?.priceCal !== previous?.priceCal?.value &&
+            : bodyq?.priceCal &&
               (await Bos.findOneAndUpdate(
                 { symbol: symbol },
                 {
-                  currentPriceCal: bodyq?.priceCal,
                   priceCal: { value: bodyq?.priceCal, date: Date.now() }
                 },
                 {
