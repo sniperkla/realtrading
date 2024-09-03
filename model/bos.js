@@ -17,8 +17,9 @@ const Bos = new Schema(
       value: { type: Number },
       date: { type: Number }
     },
-    currentPriceCal: {
-      type: Number
+    changePriceCal: {
+      type: Boolean,
+      default: false
     },
     status: { type: String, default: 'NEW' },
     bosDate: { type: Number }
