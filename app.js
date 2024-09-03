@@ -29,6 +29,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 const mongoose = require('mongoose')
 const Martinglale = require('./model/martinglale')
 const fixdec = require('./model/fixdec')
+const fixdec = require('./model/fixdec')
 
 const pathName = process.env.NAME
 const connectionString = `${process.env.DB}` + `${pathName}`
@@ -127,25 +128,46 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
     }
     if (bodyq?.takeProfit || bodyq?.stopPriceCal || bodyq?.priceCal) {
       if (!bodyq?.version) {
+        //check current priceCal
+        const previous = await Bos.findOne({ symbol: symbol })
+        const fixdecs = await fixdec.findOne({ symbol: symbol })
+
         setTimeout(async () => {
           // wait for bos na jaa
           bodyq?.takeProfit
             ? await Bos.findOneAndUpdate(
                 { symbol: symbol },
-                { takeProfit: { value: bodyq?.takeProfit, date: Date.now() } },
+                {
+                  takeProfit: { value: bodyq?.takeProfit, date: Date.now() }
+                },
                 { upsert: true }
               )
             : bodyq?.stopPriceCal
             ? await Bos.findOneAndUpdate(
                 { symbol: symbol },
                 {
-                  stopPriceCal: { value: bodyq?.stopPriceCal, date: Date.now() }
+                  stopPriceCal: {
+                    value: bodyq?.stopPriceCal,
+                    date: Date.now()
+                  }
                 },
                 { upsert: true }
               )
+            : Number(bodyq?.priceCal).toFixed(fixdecs?.dec) !==
+              previous?.priceCal
+            ? await Bos.findOneAndUpdate(
+                { symbol: symbol },
+                { currentPriceCal: bodyq?.priceCal },
+                {
+                  upsert: true
+                }
+              )
             : await Bos.findOneAndUpdate(
                 { symbol: symbol },
-                { priceCal: { value: bodyq?.priceCal, date: Date.now() } },
+                {
+                  priceCal: { value: bodyq?.priceCal, date: Date.now() },
+                  currentPriceCal: bodyq?.priceCal
+                },
                 { upsert: true }
               )
         }, 10000)
@@ -169,7 +191,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           { upsert: true }
         )
       }
-       await checkBos.togleBos(symbol)
+      await checkBos.togleBos(symbol)
       //first check before buy
       // await cronJub.checkTakeProfit4Step(margin)
       const martingale = await Martinglale.findOne({ symbol: symbol })
