@@ -17,7 +17,6 @@ const combine = require('./lib/combineUser')
 const cron = require('node-cron')
 const cronJub = require('./lib/cronJob')
 const linebot = require('./lib/linebot')
-const lvcheck = require('./lib/levelChecker')
 const checkBos = require('./lib/checkBos')
 
 require('dotenv').config()
@@ -70,13 +69,12 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
     }
     await lineNotifyPost.postLineNotify(buyit)
 
-    co
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
 
-const scheduleForakeProfit4Step = '*/30 * * * * *'
-const scheduleForcheckProfit = '*/20 * * * * *'
+const scheduleForakeProfit4Step = '*/35 * * * * *'
+const scheduleForcheckProfit = '*/25 * * * * *'
 const scheduleForcheckBos1Min = '*/45 * * * * *'
 const scheduleForcheckOpenOrder = '* * * * *'
 const scheduleForStartDay = '0 0 * * *'
