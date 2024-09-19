@@ -60,7 +60,12 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
-    await lvcheck.martingale()
+    const y = await apiBinance.getOrder(
+      4319841817,
+      get.API_KEY[0],
+      get.SECRET_KEY[0]
+    )
+    console.log('yoooo what the fuc', y)
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
@@ -272,7 +277,7 @@ const checkStopLoss = async (body) => {
     })
 
     const check = await Log.findOne({
-      'symbol': symbol,
+      symbol: symbol,
       'binanceStopLoss.symbol': symbol
     })
 
