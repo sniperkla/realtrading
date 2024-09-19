@@ -60,8 +60,10 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
+    console.log('yoooo what the fuc')
     const y = await apiBinance.getOrder(
       4319841817,
+      '1000FLOKIUSDT',
       get.API_KEY[0],
       get.SECRET_KEY[0]
     )
