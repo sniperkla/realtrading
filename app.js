@@ -61,11 +61,12 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
     const trades = await apiBinance.getUserTrades(
-      '1000FLOKIUSDT',
-      4319841817,
+      'ICXUSDT',
+      4502259390,
       get.API_KEY[0],
       get.SECRET_KEY[0]
     )
+    console.log('thsi is result', trades)
     let totalCommission = 0
     let totalRealizedPnl = 0
     trades.forEach((trade) => {
