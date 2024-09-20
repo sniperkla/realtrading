@@ -112,21 +112,8 @@ task4.start()
 app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
     let bodyq = req.body
-    if (bodyq.SMCP) {
-      await smcpChecker.smcpCheck(bodyq, get.API_KEY[0], get.SECRET_KEY[0], res)
-    } else if (bodyq.STP) {
-      await pearsonsChecker.pearsonChecker(
-        bodyq,
-        get.API_KEY[0],
-        get.SECRET_KEY[0],
-        res
-      )
-    } else {
+    if (bodyq.EMA) {
       let body = await checkDataFirst(bodyq)
-      if (body.type === 'STOP_MARKET' && bodyq?.version === 'v3.1') {
-        await checkStopLoss(body)
-      }
-
       if (body?.type === 'MARKET' && bodyq?.version === 'v3.1') {
         //first check before buy
         await cronJub.checkTakeProfit4Step(margin)
