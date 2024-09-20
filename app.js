@@ -60,14 +60,22 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
-    console.log('yoooo what the fuc')
     const y = await apiBinance.getUserTrades(
       '1000FLOKIUSDT',
       4319841817,
       get.API_KEY[0],
       get.SECRET_KEY[0]
     )
-    console.log('yoooo what the fuc', y)
+
+    let totalCommission = 0
+    let totalRealizedPnl = 0
+
+    y.forEach((trade) => {
+      totalCommission += parseFloat(trade.commission)
+      totalRealizedPnl += parseFloat(trade.realizedPnl)
+    })
+
+    console.log('yoooo what the fuc', totalCommission + totalRealizedPnl)
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
