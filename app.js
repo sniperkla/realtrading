@@ -199,8 +199,11 @@ const checkCondition = async (
     const checkLog = await Log.findOne({
       symbol: finalBody.symbol
     })
+    console.log('3')
 
     if (body.type === 'MARKET') {
+      console.log('yeah ur here')
+
       let en = {
         ...finalBody,
         apiKey: get.API_KEY[0],
@@ -372,6 +375,8 @@ const mainCalLeverage = async (body, margin) => {
   const checkMarketFirst = await Log.findOne({
     symbol: body.symbol
   })
+
+  console.log('1')
   if (checkMarketFirst === null) {
     const calLeverage = await callLeverage.leverageCal(
       body.symbol,
@@ -382,6 +387,8 @@ const mainCalLeverage = async (body, margin) => {
       get.SECRET_KEY[0],
       margin
     )
+    console.log('2')
+
     checkCondition(
       body,
       calLeverage.maximumQty,
