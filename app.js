@@ -68,7 +68,8 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
       totalCommission += parseFloat(trade.commission)
       totalRealizedPnl += parseFloat(trade.realizedPnl)
     })
-    console.log('result', totalCommission + -totalRealizedPnl)
+    console.log('this is result', trades)
+    console.log('result', totalRealizedPnl + -totalCommission)
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
