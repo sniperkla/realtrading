@@ -13,12 +13,8 @@ const realEnvironment = require('./lib/realEnv')
 const combine = require('./lib/combineUser')
 const cron = require('node-cron')
 const cronJub = require('./lib/cronJob')
-const Smcp = require('./model/smcp')
-const Pearson = require('./model/pearsons')
-const smcpChecker = require('./lib/smcpChecker')
-const pearsonsChecker = require('./lib/pearsonChecker')
 const linebot = require('./lib/linebot')
-const lvcheck = require('./lib/levelChecker')
+const checkCloseOrderEMA = require('./lib/checkCloseOrderEMA')
 
 require('dotenv').config()
 
@@ -112,85 +108,40 @@ task4.start()
 app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
     let bodyq = req.body
-    if (bodyq.EMA) {
+    if (bodyq.version === 'EMA') {
       let body = await checkDataFirst(bodyq)
-      if (body?.type === 'MARKET' && bodyq?.version === 'v3.1') {
-        //first check before buy
-        await cronJub.checkTakeProfit4Step(margin)
-        const martingale = await Martinglale.findOne({ symbol: body.symbol })
-        const checkSmcp = await Smcp.findOne({ symbol: body.symbol })
-        const data = await Log.findOne({ symbol: body.symbol })
-        if (!martingale) {
-          await Martinglale.create({
-            symbol: body.symbol,
-            stackLose: 1,
-            previousMargin: margin
-          })
-        }
-        if (checkSmcp && !data) {
-          const buyit = {
-            symbol: body.symbol,
-            text: 'initsmcp',
-            msg: `💎 มีการสั่งซื้อ Market ${
-              body.symbol
-            }\n                     เข้าเงื่อนไข SMCP:${
-              checkSmcp ? '1' : '0'
-            } 💎`
-          }
-          await lineNotifyPost.postLineNotify(buyit)
-          await mainCalLeverage(body, margin)
-          await Smcp.deleteOne({ symbol: body.symbol })
-        } else if (!checkSmcp && !data) {
-          const pearson = await Pearson.findOne({ symbol: body.symbol })
-          if (
-            (pearson?.STP >= 0 && bodyq.side === 'BUY' && !data) ||
-            (pearson?.STP <= 0 && bodyq.side === 'SELL' && !data)
-          ) {
-            const buyit = {
-              symbol: body.symbol,
-              text: 'initpearson',
-              msg: `💎 มีการสั่งซื้อ Market ${
-                body.symbol
-              }\n                     เข้าเงื่อนไข STP Trend : ${
-                pearson?.STP >= 0 ? '+' : '-'
-              }\n                     Market side : ${bodyq.side} 💎`
-            }
-            await lineNotifyPost.postLineNotify(buyit)
-            await mainCalLeverage(body, margin)
-          } else {
-            const buyit = {
-              symbol: body.symbol,
-              text: 'donotbuying',
-              msg: `❌ ${body.symbol} ไม่เข้าเงื่อนไข STP Trend : ${
-                pearson?.STP >= 0 ? '+' : '-'
-              }\n                     SMCP : ${
-                checkSmcp ? '1' : '0'
-              }\n                     Market side : ${bodyq.side} ❌`
-            }
-            await lineNotifyPost.postLineNotify(buyit)
-          }
-        } else {
-          if (checkSmcp) {
-            await Smcp.deleteOne({ symbol: body.symbol })
-          }
-          const buyit = {
-            symbol: body.symbol,
-            text: 'donotbuying',
-            msg: `❌ ยกเลิกการสั่งซื้อ\nเหรียญ ${
-              body.symbol
-            } มีไม้เปิดอยู่\n                     ${
-              checkSmcp ? `✅ ยกเลิกการตั้ง SMCP` : 'ไม่มีการตั้ง SMCP ก่อนหน้า'
-            }`
-          }
-          await lineNotifyPost.postLineNotify(buyit)
-        }
+      await checkCloseOrderEMA.checekOrderEMA(
+        body,
+        get.API_KEY[0],
+        get.SECRET_KEY[0]
+      )
+      //first check before buy
+      await cronJub.checkTakeProfit4Step(margin)
+      const martingale = await Martinglale.findOne({ symbol: body.symbol })
+      const data = await Log.findOne({ symbol: body.symbol })
+      if (!martingale) {
+        await Martinglale.create({
+          symbol: body.symbol,
+          stackLose: 1,
+          previousMargin: margin
+        })
       }
+      if (!data) {
+        const buyit = {
+          symbol: body.symbol,
+          text: 'initsmcp',
+          msg: `💎 มีการสั่งซื้อ Market ${body.symbol}`
+        }
+        await lineNotifyPost.postLineNotify(buyit)
+        await mainCalLeverage(body, margin)
+      }
+      const buyit = {
+        text: 'debug',
+        msg: `${JSON.stringify(bodyq)}`
+      }
+      await lineNotifyPost.postLineNotify(buyit)
     }
-    const buyit = {
-      text: 'debug',
-      msg: `${JSON.stringify(bodyq)}`
-    }
-    await lineNotifyPost.postLineNotify(buyit)
+
     return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
   } catch (error) {}
 })
@@ -358,21 +309,19 @@ const checkMarketBody = (body) => {
     real = {
       type: body.type,
       version: body.version,
-      BTU: body.BTU,
       side: body.side,
       symbol: body.symbol,
       priceCal: parseFloat(body.priceCal),
-      stopPriceCal: parseFloat(body.stopPriceCal2)
+      stopPriceCal: parseFloat(body.stopPriceCal)
     }
   else if (body.side === 'SELL') {
     real = {
       type: body.type,
       version: body.version,
-      BTL: body.BTL,
       side: body.side,
       symbol: body.symbol,
       priceCal: parseFloat(body.priceCal),
-      stopPriceCal: parseFloat(body.stopPriceCal2)
+      stopPriceCal: parseFloat(body.stopPriceCal)
     }
   }
   return real
@@ -415,21 +364,6 @@ const checkDataFirst = async (bodyq) => {
     if (!checkData) await Trading.create(bodyMarket)
 
     return bodyMarket
-  } else if (bodyq?.type === 'STOP_MARKET') {
-    let body = {
-      ...bodyq,
-      symbol: bodyq.symbol.replace(/\.P$/, '')
-    }
-    const bodyStopLoss = checkStopLossBody(body)
-
-    return bodyStopLoss
-  } else {
-    let body = {
-      ...bodyq,
-      symbol: bodyq.symbol.replace(/\.P$/, '')
-    }
-
-    return body
   }
 }
 
