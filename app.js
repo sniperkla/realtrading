@@ -16,6 +16,8 @@ const cronJub = require('./lib/cronJob')
 const linebot = require('./lib/linebot')
 const checkCloseOrderEMA = require('./lib/checkCloseOrderEMA')
 
+const checkEvery1hr = require('./lib/checkEvery1hr')
+
 require('dotenv').config()
 
 app.use(cors())
@@ -56,20 +58,7 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
-    const trades = await apiBinance.getUserTrades(
-      '1000FLOKIUSDT',
-      4319841817,
-      get.API_KEY[0],
-      get.SECRET_KEY[0]
-    )
-    let totalCommission = 0
-    let totalRealizedPnl = 0
-    trades.forEach((trade) => {
-      totalCommission += parseFloat(trade.commission)
-      totalRealizedPnl += parseFloat(trade.realizedPnl)
-    })
-    console.log('this is result', trades)
-    console.log('result', totalRealizedPnl + -totalCommission)
+    await checkEvery1hr(get.API_KEY[0], get.SECRET_KEY[0])
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
