@@ -58,7 +58,6 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
-    await checkEvery1hr.checkOrders(get.API_KEY[0], get.SECRET_KEY[0])
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
