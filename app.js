@@ -26,6 +26,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
 const mongoose = require('mongoose')
 const Martinglale = require('./model/martinglale')
+const trading = require('./model/trading')
 
 const pathName = process.env.NAME
 const connectionString = `${process.env.DB}` + `${pathName}`
