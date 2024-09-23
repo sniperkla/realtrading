@@ -58,6 +58,15 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
+    const trades = await apiBinance.getUserTrades(
+      '1000FLOKIUSDT',
+      12454193442,
+      get.API_KEY[0],
+      get.SECRET_KEY[0]
+    )
+
+    console.log('this is trades', trades)
+
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
