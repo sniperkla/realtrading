@@ -187,11 +187,8 @@ const checkCondition = async (
     const checkLog = await Log.findOne({
       symbol: finalBody.symbol
     })
-    console.log('3')
 
     if (body.type === 'MARKET') {
-      console.log('yeah ur here')
-
       let en = {
         ...finalBody,
         apiKey: get.API_KEY[0],
