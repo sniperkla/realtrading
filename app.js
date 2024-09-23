@@ -59,8 +59,8 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
     const trades = await apiBinance.getUserTrades(
-      '1000FLOKIUSDT',
-      12454193442,
+      'NEARUSDT',
+      25938936447,
       get.API_KEY[0],
       get.SECRET_KEY[0]
     )
