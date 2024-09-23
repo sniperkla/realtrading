@@ -65,8 +65,13 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
       get.API_KEY[0],
       get.SECRET_KEY[0]
     )
-
-    console.log('this is trades', trades)
+    const valueReal = tradesReal[tradesReal.length - 1].time
+    let totalRealizedPnl = 0
+    const all = tradesReal.forEach((trade) => {
+      trades.filter(trade.time === valueReal)
+      return (totalRealizedPnl += parseFloat(trade?.income))
+    })
+    console.log('this is trades', all)
 
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
