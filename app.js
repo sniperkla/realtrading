@@ -59,7 +59,7 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
-    const trades = await apiBinance.getUserTrades(
+    const trades = await apiBinance.getPnl(
       'TRXUSDT',
       12466830290,
       get.API_KEY[0],
