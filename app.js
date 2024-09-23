@@ -67,12 +67,16 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
     )
     const valueReal = tradesReal[tradesReal.length - 1].time
     let totalRealizedPnl = 0
-    const all = tradesReal.forEach((trade) => {
-      trades.filter(trade.time === valueReal)
-      return (totalRealizedPnl += parseFloat(trade?.income))
-    })
-    console.log('this is trades', all)
 
+    // Using `filter` to find trades with matching time and then calculate the sum
+    const matchingTrades = tradesReal.filter(
+      (trade) => trade.time === valueReal
+    )
+
+    matchingTrades.forEach((trade) => {
+      totalRealizedPnl += parseFloat(trade?.income || 0)
+    })
+    console.log('This is total realized PnL:', matchingTrades)
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
