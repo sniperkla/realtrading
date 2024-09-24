@@ -376,7 +376,6 @@ const mainCalLeverage = async (body, margin) => {
     symbol: body.symbol
   })
 
-  console.log('1')
   if (checkMarketFirst === null) {
     const calLeverage = await callLeverage.leverageCal(
       body.symbol,
@@ -387,7 +386,6 @@ const mainCalLeverage = async (body, margin) => {
       get.SECRET_KEY[0],
       margin
     )
-    console.log('2')
 
     checkCondition(
       body,
