@@ -77,7 +77,7 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
   } catch (error) {}
 })
 
-const scheduleForakeProfit4Step = '*/30 * * * * *'
+const scheduleForakeProfit4Step = '*/37 * * * * *'
 const scheduleForcheckProfit = '*/20 * * * * *'
 const scheduleForStartDay = '0 0 * * *'
 const schedule1hr = '0 * * * *'
