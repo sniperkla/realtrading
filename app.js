@@ -133,8 +133,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           { upsert: true }
         )
       }
-    }
-    if (!bodyq?.MACD) {
+    } else if (!bodyq?.MACD) {
       await delay(2000)
       console.log('yeah no macd jaa')
       if (bodyq.version === 'EMA') {
