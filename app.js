@@ -6,6 +6,8 @@ const cors = require('cors')
 const bodyParser = require('body-parser')
 const Trading = require('./model/trading')
 const Log = require('./model/log')
+const MACD = require('./model/macd')
+
 const lineNotifyPost = require('./lib/lineNotifyPost')
 const apiBinance = require('./lib/apibinance')
 const callLeverage = require('./lib/calLeverage')
@@ -15,6 +17,7 @@ const cron = require('node-cron')
 const cronJub = require('./lib/cronJob')
 const linebot = require('./lib/linebot')
 const checkCloseOrderEMA = require('./lib/checkCloseOrderEMA')
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const checkEvery1hr = require('./lib/checkEvery1hr')
 
@@ -112,40 +115,68 @@ task4.start()
 app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
     let bodyq = req.body
-    if (bodyq.version === 'EMA') {
-      let body = await checkDataFirst(bodyq)
-      await checkCloseOrderEMA.checekOrderEMA(
-        body,
-        get.API_KEY[0],
-        get.SECRET_KEY[0]
-      )
-      //first check before buy
-      await cronJub.checkTakeProfit4Step(margin)
-      const martingale = await Martinglale.findOne({ symbol: body.symbol })
-      const data = await Log.findOne({ symbol: body.symbol })
-      if (!martingale) {
-        await Martinglale.create({
-          symbol: body.symbol,
-          stackLose: 1,
-          previousMargin: margin
+    if (bodyq?.MACD) {
+      const checkMACD = await MACD.findOne({
+        symbol: symbol.replace(/\.P$/, '')
+      })
+      if (!checkMACD) {
+        await MACD.create({
+          MACD: bodyq?.MACD,
+          symbol: bodyq?.symbol.replace(/\.P$/, '')
+        })
+      } else {
+        await MACD.updateOne({
+          MACD: bodyq?.MACD,
+          symbol: bodyq?.symbol.replace(/\.P$/, '')
         })
       }
-      if (!data) {
-        const buyit = {
-          symbol: body.symbol,
-          text: 'initsmcp',
-          msg: `💎 มีการสั่งซื้อ Market ${body.symbol}`
-        }
-        await lineNotifyPost.postLineNotify(buyit)
-        await mainCalLeverage(body, margin)
-      }
-      const buyit = {
-        text: 'debug',
-        msg: `${JSON.stringify(bodyq)}`
-      }
-      await lineNotifyPost.postLineNotify(buyit)
     }
 
+    await delay(5000)
+
+    if (bodyq.version === 'EMA') {
+      let body = await checkDataFirst(bodyq)
+      const checkMACD = await MACD.findOne({ symbol: body.symbol })
+      if (checkMACD?.MACD === body?.side) {
+        await checkCloseOrderEMA.checekOrderEMA(
+          body,
+          get.API_KEY[0],
+          get.SECRET_KEY[0]
+        )
+        //first check before buy
+        await cronJub.checkTakeProfit4Step(margin)
+        const martingale = await Martinglale.findOne({ symbol: body.symbol })
+        const data = await Log.findOne({ symbol: body.symbol })
+        if (!martingale) {
+          await Martinglale.create({
+            symbol: body.symbol,
+            stackLose: 1,
+            previousMargin: margin
+          })
+        }
+        if (!data) {
+          const buyit = {
+            symbol: body.symbol,
+            text: 'initsmcp',
+            msg: `💎 มีการสั่งซื้อ Market ${body.symbol}`
+          }
+          await lineNotifyPost.postLineNotify(buyit)
+          await mainCalLeverage(body, margin)
+        }
+        const buyit = {
+          text: 'debug',
+          msg: `${JSON.stringify(bodyq)}`
+        }
+        await lineNotifyPost.postLineNotify(buyit)
+      } else {
+        const buyit = {
+          text: 'initsmcp',
+          msg: `❌❌ เหรียญ : ${body?.symbol} \n ไม่เข้าเงื่อนไข MACD : ${checkMACD?.MACD} \n 
+           order side : ${body?.side} ❌❌`
+        }
+        await lineNotifyPost.postLineNotify(buyit)
+      }
+    }
     return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
   } catch (error) {}
 })
