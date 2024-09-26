@@ -134,50 +134,51 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
         )
       }
     }
-
-    await delay(5000)
-
-    if (bodyq.version === 'EMA') {
-      let body = await checkDataFirst(bodyq)
-      const checkMACD = await MACD.findOne({ symbol: body.symbol })
-      if (checkMACD?.MACD === body?.side) {
-        await checkCloseOrderEMA.checekOrderEMA(
-          body,
-          get.API_KEY[0],
-          get.SECRET_KEY[0]
-        )
-        //first check before buy
-        await cronJub.checkTakeProfit4Step(margin)
-        const martingale = await Martinglale.findOne({ symbol: body.symbol })
-        const data = await Log.findOne({ symbol: body.symbol })
-        if (!martingale) {
-          await Martinglale.create({
-            symbol: body.symbol,
-            stackLose: 1,
-            previousMargin: margin
-          })
-        }
-        if (!data) {
+    if (!bodyq?.MACD) {
+      await delay(2000)
+      console.log('yeah no macd jaa')
+      if (bodyq.version === 'EMA') {
+        let body = await checkDataFirst(bodyq)
+        const checkMACD = await MACD.findOne({ symbol: body.symbol })
+        if (checkMACD?.MACD === body?.side) {
+          await checkCloseOrderEMA.checekOrderEMA(
+            body,
+            get.API_KEY[0],
+            get.SECRET_KEY[0]
+          )
+          //first check before buy
+          await cronJub.checkTakeProfit4Step(margin)
+          const martingale = await Martinglale.findOne({ symbol: body.symbol })
+          const data = await Log.findOne({ symbol: body.symbol })
+          if (!martingale) {
+            await Martinglale.create({
+              symbol: body.symbol,
+              stackLose: 1,
+              previousMargin: margin
+            })
+          }
+          if (!data) {
+            const buyit = {
+              symbol: body.symbol,
+              text: 'initsmcp',
+              msg: `💎 มีการสั่งซื้อ Market ${body.symbol}`
+            }
+            await lineNotifyPost.postLineNotify(buyit)
+            await mainCalLeverage(body, margin)
+          }
           const buyit = {
-            symbol: body.symbol,
-            text: 'initsmcp',
-            msg: `💎 มีการสั่งซื้อ Market ${body.symbol}`
+            text: 'debug',
+            msg: `${JSON.stringify(bodyq)}`
           }
           await lineNotifyPost.postLineNotify(buyit)
-          await mainCalLeverage(body, margin)
-        }
-        const buyit = {
-          text: 'debug',
-          msg: `${JSON.stringify(bodyq)}`
-        }
-        await lineNotifyPost.postLineNotify(buyit)
-      } else {
-        const buyit = {
-          text: 'initsmcp',
-          msg: `❌❌ เหรียญ : ${body?.symbol} \n ไม่เข้าเงื่อนไข MACD : ${checkMACD?.MACD} \n 
+        } else {
+          const buyit = {
+            text: 'initsmcp',
+            msg: `❌❌ เหรียญ : ${body?.symbol} \n ไม่เข้าเงื่อนไข MACD : ${checkMACD?.MACD} \n 
            order side : ${body?.side} ❌❌`
+          }
+          await lineNotifyPost.postLineNotify(buyit)
         }
-        await lineNotifyPost.postLineNotify(buyit)
       }
     }
     return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
