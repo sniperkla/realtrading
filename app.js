@@ -125,10 +125,13 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           symbol: bodyq?.symbol.replace(/\.P$/, '')
         })
       } else {
-        await MACD.updateOne({
-          MACD: bodyq?.MACD,
-          symbol: bodyq?.symbol.replace(/\.P$/, '')
-        })
+        await MACD.findOneAndUpdate(
+          {
+            symbol: bodyq?.symbol.replace(/\.P$/, '')
+          },
+          { MACD: bodyq?.MACD },
+          { upsert: true }
+        )
       }
     }
 
