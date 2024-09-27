@@ -6,7 +6,6 @@ const cors = require('cors')
 const bodyParser = require('body-parser')
 const Trading = require('./model/trading')
 const Log = require('./model/log')
-const MACD = require('./model/macd')
 
 const lineNotifyPost = require('./lib/lineNotifyPost')
 const apiBinance = require('./lib/apibinance')
@@ -17,9 +16,6 @@ const cron = require('node-cron')
 const cronJub = require('./lib/cronJob')
 const linebot = require('./lib/linebot')
 const checkCloseOrderEMA = require('./lib/checkCloseOrderEMA')
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-
-const checkEvery1hr = require('./lib/checkEvery1hr')
 
 require('dotenv').config()
 
