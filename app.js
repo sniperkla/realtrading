@@ -16,6 +16,7 @@ const cron = require('node-cron')
 const cronJub = require('./lib/cronJob')
 const linebot = require('./lib/linebot')
 const checkCloseOrderEMA = require('./lib/checkCloseOrderEMA')
+const checkEvery1hr = require('./lib/checkEvery1hr')
 
 require('dotenv').config()
 
@@ -58,20 +59,7 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
-    const trades = await apiBinance.getPnl(
-      'WOOUSDT',
-      4387347633,
-      get.API_KEY[0],
-      get.SECRET_KEY[0]
-    )
-    const valueReal = trades[trades.length - 1].time
-    let totalRealizedPnl = 0
-    const matchingTrades = trades.filter((trade) => trade.time === valueReal)
-
-    matchingTrades.forEach((trade) => {
-      totalRealizedPnl += parseFloat(trade?.income || 0)
-    })
-    console.log('This is total realized PnL:', totalRealizedPnl)
+    await checkEvery1hr.checkSumMatingale()
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
