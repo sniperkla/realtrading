@@ -374,7 +374,7 @@ const mainCalLeverage = async (body, margin) => {
     symbol: body.symbol
   })
 
-  console.log('debug checkstioreSL')
+  console.log('debug checkstioreSL', checkStoreSL)
 
   if (checkMarketFirst === null) {
     const calLeverage = await callLeverage.leverageCal(
