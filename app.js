@@ -98,11 +98,9 @@ task4.start()
 app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
     let bodyq = req.body
-    console.log('fucking bodyxxxx', bodyq)
-
     let body = await checkDataFirst(bodyq)
     if (bodyq?.version === 'EMA') {
-      await storeStopLoss(body)
+      await storeStopLoss(bodyq)
       if (bodyq?.type === 'MARKET') {
         await checkCloseOrderEMA.checekOrderEMA(
           body,
