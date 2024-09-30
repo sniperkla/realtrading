@@ -365,20 +365,12 @@ const checkDataFirst = async (bodyq) => {
 }
 
 const mainCalLeverage = async (body, margin) => {
-  console.log('debug checkstioreSL')
-
   const checkMarketFirst = await Log.findOne({
     symbol: body.symbol
   })
   const checkStoreSL = await storesl.findOne({
     symbol: body.symbol
   })
-
-  console.log('debug checkstioreSL', checkStoreSL)
-  console.log('debug checkstioreSL', body.side)
-  console.log('debug checkstioreSL', checkStoreSL?.stopPriceCalSell)
-
-  console.log('debug checkstioreSL', checkStoreSL?.stopPriceCalBuy)
 
   if (checkMarketFirst === null) {
     const calLeverage = await callLeverage.leverageCal(
