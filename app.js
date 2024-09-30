@@ -17,6 +17,7 @@ const linebot = require('./lib/linebot')
 const checkCloseOrderEMA = require('./lib/checkCloseOrderEMA')
 const checkEvery1hr = require('./lib/checkEvery1hr')
 const { storeStopLoss } = require('./lib/storeStop')
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 require('dotenv').config()
 
@@ -102,6 +103,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
     if (bodyq?.version === 'EMA') {
       await storeStopLoss(bodyq)
       if (bodyq?.type === 'MARKET') {
+        await delay(2000)
         await checkCloseOrderEMA.checekOrderEMA(
           body,
           get.API_KEY[0],
