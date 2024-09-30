@@ -102,7 +102,10 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
     let body = await checkDataFirst(bodyq)
     if (bodyq?.version === 'EMA') {
       await storeStopLoss(bodyq)
-      if (bodyq?.type === 'MARKET') {
+      const checkStoreSL = await storesl.findOne({
+        symbol: bodyq.symbol
+      })
+      if (bodyq?.type === 'MARKET' && checkStoreSL) {
         await delay(2000)
         await checkCloseOrderEMA.checekOrderEMA(
           body,
