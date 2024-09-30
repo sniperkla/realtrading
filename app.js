@@ -6,7 +6,7 @@ const cors = require('cors')
 const bodyParser = require('body-parser')
 const Trading = require('./model/trading')
 const Log = require('./model/log')
-
+const StoreSL = require('./model/storesl')
 const lineNotifyPost = require('./lib/lineNotifyPost')
 const apiBinance = require('./lib/apibinance')
 const callLeverage = require('./lib/calLeverage')
@@ -17,6 +17,7 @@ const cronJub = require('./lib/cronJob')
 const linebot = require('./lib/linebot')
 const checkCloseOrderEMA = require('./lib/checkCloseOrderEMA')
 const checkEvery1hr = require('./lib/checkEvery1hr')
+const { storeStopLoss } = require('./lib/storeStop')
 
 require('dotenv').config()
 
@@ -39,7 +40,6 @@ mongoose
   })
   .then(() => console.log('MongoDB connected successfully'))
   .catch((err) => console.error('Error connecting to MongoDB:', err))
-let bodyq = null
 
 app.post(`/sellall_${pathName}`, async (req, res) => {
   try {
@@ -99,41 +99,42 @@ task4.start()
 app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
     let bodyq = req.body
-
-    if (bodyq.version === 'EMA') {
-      let body = await checkDataFirst(bodyq)
-      await checkCloseOrderEMA.checekOrderEMA(
-        body,
-        get.API_KEY[0],
-        get.SECRET_KEY[0]
-      )
-      //first check before buy
-      await cronJub.checkTakeProfit4Step(margin)
-      const martingale = await Martinglale.findOne({ symbol: body.symbol })
-      const data = await Log.findOne({ symbol: body.symbol })
-      if (!martingale) {
-        await Martinglale.create({
-          symbol: body.symbol,
-          stackLose: 1,
-          previousMargin: margin
-        })
-      }
-      if (!data) {
+    let body = await checkDataFirst(bodyq)
+    if (bodyq?.version === 'EMA') {
+      await storeStopLoss(body)
+      if (bodyq?.type === 'MARKET') {
+        await checkCloseOrderEMA.checekOrderEMA(
+          body,
+          get.API_KEY[0],
+          get.SECRET_KEY[0]
+        )
+        //first check before buy
+        await cronJub.checkTakeProfit4Step(margin)
+        const martingale = await Martinglale.findOne({ symbol: body.symbol })
+        const data = await Log.findOne({ symbol: body.symbol })
+        if (!martingale) {
+          await Martinglale.create({
+            symbol: body.symbol,
+            stackLose: 1,
+            previousMargin: margin
+          })
+        }
+        if (!data) {
+          const buyit = {
+            symbol: body.symbol,
+            text: 'initsmcp',
+            msg: `💎 มีการสั่งซื้อ Market ${body.symbol}`
+          }
+          await lineNotifyPost.postLineNotify(buyit)
+          await mainCalLeverage(body, margin)
+        }
         const buyit = {
-          symbol: body.symbol,
-          text: 'initsmcp',
-          msg: `💎 มีการสั่งซื้อ Market ${body.symbol}`
+          text: 'debug',
+          msg: `${JSON.stringify(bodyq)}`
         }
         await lineNotifyPost.postLineNotify(buyit)
-        await mainCalLeverage(body, margin)
       }
-      const buyit = {
-        text: 'debug',
-        msg: `${JSON.stringify(bodyq)}`
-      }
-      await lineNotifyPost.postLineNotify(buyit)
     }
-
     return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
   } catch (error) {}
 })
@@ -364,11 +365,17 @@ const mainCalLeverage = async (body, margin) => {
     symbol: body.symbol
   })
 
+  const checkStoreSL = await StoreSL.findOne({
+    symbol: body.symbol
+  })
+
   if (checkMarketFirst === null) {
     const calLeverage = await callLeverage.leverageCal(
       body.symbol,
       body.priceCal,
-      body.stopPriceCal,
+      body.side === 'SELL'
+        ? checkStoreSL?.stopPriceCalSell
+        : checkStoreSL?.stopPriceCalBuy,
       body.side,
       get.API_KEY[0],
       get.SECRET_KEY[0],
