@@ -91,10 +91,10 @@ const task2 = cron.schedule(scheduleForcheckProfit, doCheckMargin)
 const task3 = cron.schedule(scheduleForStartDay, doStartDay)
 const task4 = cron.schedule(schedule1hr, doStart1hrPayload)
 
-task1.start()
-task2.start()
-task3.start()
-task4.start()
+// task1.start()
+// task2.start()
+// task3.start()
+// task4.start()
 
 app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
