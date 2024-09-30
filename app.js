@@ -6,7 +6,6 @@ const cors = require('cors')
 const bodyParser = require('body-parser')
 const Trading = require('./model/trading')
 const Log = require('./model/log')
-const StoreSL = require('./model/storesl')
 const lineNotifyPost = require('./lib/lineNotifyPost')
 const apiBinance = require('./lib/apibinance')
 const callLeverage = require('./lib/calLeverage')
@@ -27,7 +26,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
 const mongoose = require('mongoose')
 const Martinglale = require('./model/martinglale')
-const trading = require('./model/trading')
+const storesl = require('./model/storesl')
 
 const pathName = process.env.NAME
 const connectionString = `${process.env.DB}` + `${pathName}`
@@ -364,8 +363,7 @@ const mainCalLeverage = async (body, margin) => {
   const checkMarketFirst = await Log.findOne({
     symbol: body.symbol
   })
-
-  const checkStoreSL = await StoreSL.findOne({
+  const checkStoreSL = await storesl.findOne({
     symbol: body.symbol
   })
 
