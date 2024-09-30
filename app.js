@@ -105,7 +105,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
       const checkStoreSL = await storesl.findOne({
         symbol: bodyq.symbol
       })
-      if (bodyq?.type === 'MARKET' && checkStoreSL) {
+      if (bodyq?.type === 'MARKET') {
         await delay(2000)
         await checkCloseOrderEMA.checekOrderEMA(
           body,
@@ -365,6 +365,8 @@ const checkDataFirst = async (bodyq) => {
 }
 
 const mainCalLeverage = async (body, margin) => {
+  console.log('debug checkstioreSL')
+
   const checkMarketFirst = await Log.findOne({
     symbol: body.symbol
   })
@@ -372,7 +374,7 @@ const mainCalLeverage = async (body, margin) => {
     symbol: body.symbol
   })
 
-  console.log('debug checkstioreSL', checkStoreSL)
+  console.log('debug checkstioreSL')
 
   if (checkMarketFirst === null) {
     const calLeverage = await callLeverage.leverageCal(
