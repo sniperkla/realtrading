@@ -129,12 +129,12 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
           await lineNotifyPost.postLineNotify(buyit)
           await mainCalLeverage(body, margin)
         }
-        const buyit = {
-          text: 'debug',
-          msg: `${JSON.stringify(bodyq)}`
-        }
-        await lineNotifyPost.postLineNotify(buyit)
       }
+      const buyit = {
+        text: 'debug',
+        msg: `${JSON.stringify(bodyq)}`
+      }
+      await lineNotifyPost.postLineNotify(buyit)
     }
     return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
   } catch (error) {}
