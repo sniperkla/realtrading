@@ -100,6 +100,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
     let bodyq = req.body
     let body = await checkDataFirst(bodyq)
     if (bodyq?.version === 'EMA') {
+      console.log('fucking body', body)
       await storeStopLoss(body)
       if (bodyq?.type === 'MARKET') {
         await checkCloseOrderEMA.checekOrderEMA(
