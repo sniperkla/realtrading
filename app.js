@@ -106,7 +106,6 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
         symbol: bodyq.symbol
       })
       if (bodyq?.type === 'MARKET') {
-        await delay(2000)
         await checkCloseOrderEMA.checekOrderEMA(
           body,
           get.API_KEY[0],
