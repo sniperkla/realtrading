@@ -66,7 +66,7 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
     const x = await Log.find()
     // const bot = new TelegramBot(token, { polling: true })
-    testTelegrame(`${JSON.stringify(x)}`)
+    testTelegrame(`hello`)
     // Listen for any kind of message and respond
     // bot.on('message', (msg) => {
     //   const chatId = msg.chat.id
