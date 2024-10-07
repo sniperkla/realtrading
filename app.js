@@ -18,7 +18,10 @@ const checkCloseOrderEMA = require('./lib/checkCloseOrderEMA')
 const checkEvery1hr = require('./lib/checkEvery1hr')
 const { storeStopLoss } = require('./lib/storeStop')
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+const TelegramBot = require('node-telegram-bot-api')
 
+// Replace 'YOUR_TELEGRAM_BOT_TOKEN' with the token from BotFather
+const token = '7459691142:AAHT3Fxr5I0nMpkdQjH4BS2l_a6-YCKU-ms'
 require('dotenv').config()
 
 app.use(cors())
@@ -59,7 +62,21 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
-    await checkEvery1hr.checkSumMatingale()
+    const bot = new TelegramBot(token, { polling: true })
+
+    // Listen for any kind of message and respond
+    bot.on('message', (msg) => {
+      const chatId = msg.chat.id
+      const messageText = msg.text
+
+      // Echo the received message back to the user
+      bot.sendMessage(chatId, `You said: ${messageText}`)
+    })
+
+    // Optional: handle errors
+    bot.on('polling_error', (error) => {
+      console.log(error) // Log errors
+    })
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
