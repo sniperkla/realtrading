@@ -438,7 +438,7 @@ app.listen(port, () => {
 
 const testTelegrame = () => {
   const message = 'Hello! This is a direct message from your backend with data.'
-  const chatId = 93372553
+  const chatId = -4527197397
   // Function to send a message via Telegram API
   async function sendMessageToTelegram(chatId, message) {
     const url = `https://api.telegram.org/bot${token}/sendMessage`
