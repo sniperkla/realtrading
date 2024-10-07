@@ -70,7 +70,7 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
       const messageText = msg.text
 
       // Echo the received message back to the user
-      bot.sendMessage(chatId, `You said: ${messageText}`)
+      bot.sendMessage(chatId, `You said: ${"heelo"}`)
     })
 
     // Optional: handle errors
