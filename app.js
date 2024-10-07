@@ -148,6 +148,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
             text: 'initsmcp',
             msg: `💎 มีการสั่งซื้อ Market ${body.symbol}`
           }
+          await testTelegrame(buyit.msg)
           await lineNotifyPost.postLineNotify(buyit)
           await mainCalLeverage(body, margin)
         }
@@ -156,6 +157,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
         text: 'debug',
         msg: `${JSON.stringify(bodyq)}`
       }
+
       await lineNotifyPost.postLineNotify(buyit)
     }
     return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
