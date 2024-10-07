@@ -14,7 +14,7 @@ const combine = require('./lib/combineUser')
 const cron = require('node-cron')
 const cronJub = require('./lib/cronJob')
 const linebot = require('./lib/linebot')
-const axios = require('axios')
+const { testTelegrame } = require('./lib/telegramBot')
 
 const checkCloseOrderEMA = require('./lib/checkCloseOrderEMA')
 const checkEvery1hr = require('./lib/checkEvery1hr')
@@ -64,21 +64,22 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
-    const bot = new TelegramBot(token, { polling: true })
-    await testTelegrame()
+    const x = await Log.find()
+    // const bot = new TelegramBot(token, { polling: true })
+    testTelegrame(`${JSON.stringify(x)}`)
     // Listen for any kind of message and respond
-    bot.on('message', (msg) => {
-      const chatId = msg.chat.id
-      const messageText = msg.text
+    // bot.on('message', (msg) => {
+    //   const chatId = msg.chat.id
+    //   const messageText = msg.text
 
-      // Echo the received message back to the user
-      bot.sendMessage(chatId, `You said: ${'heelo'}`)
-    })
+    //   // Echo the received message back to the user
+    //   bot.sendMessage(chatId, `You said: ${'heelo'}`)
+    // })
 
-    // Optional: handle errors
-    bot.on('polling_error', (error) => {
-      console.log(error) // Log errors
-    })
+    // // Optional: handle errors
+    // bot.on('polling_error', (error) => {
+    //   console.log(error) // Log errors
+    // })
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
@@ -435,28 +436,3 @@ const mainCalLeverage = async (body, margin) => {
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
-
-const testTelegrame = () => {
-  const message = 'Hello! This is a direct message from your backend with data.'
-  const chatId = 5436398702
-  // Function to send a message via Telegram API
-  async function sendMessageToTelegram(chatId, message) {
-    const url = `https://api.telegram.org/bot${token}/sendMessage`
-
-    try {
-      await axios.post(url, {
-        chat_id: chatId,
-        text: message
-      })
-      console.log('Message sent successfully')
-    } catch (error) {
-      console.error(
-        'Error sending message to Telegram:',
-        error.response ? error.response.data : error.message
-      )
-    }
-  }
-
-  // Example: Send the message when your backend event happens
-  sendMessageToTelegram(chatId, message)
-}
