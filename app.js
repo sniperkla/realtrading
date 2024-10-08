@@ -90,19 +90,20 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
     const sum =
       previousMargin.reduce((sum, margin) => sum + margin, 0) || 'error'
 
-    console.log('sum sum', sum)
     if (!checkInit) {
-      Initmargin.create({ _id: 'maxmartingale', highest: sum })
+      initmarginmonthly.create({ _id: 'maxmartingale', highest: sum })
     } else {
       if (checkInit.highest < sum) {
-        Initmargin.findOneAndUpdate(
+        initmarginmonthly.findOneAndUpdate(
           { _id: 'maxmartingale' },
           { highest: sum },
           { upsert: true }
         )
       }
     }
-    const highestMartingale = Initmargin.findOne({ _id: 'maxmartingale' })
+    const highestMartingale = initmarginmonthly.findOne({
+      _id: 'maxmartingale'
+    })
     buyit = {
       text: 'pearson',
       msg: `💢💢 Summary Martingale Cost Opened : ${sum?.toFixed(
