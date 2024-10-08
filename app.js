@@ -26,7 +26,6 @@ app.use(bodyParser.urlencoded({ extended: false }))
 const mongoose = require('mongoose')
 const storesl = require('./model/storesl')
 const Martinglale = require('./model/martinglale')
-const initmarginmonthly = require('./model/initmarginmonthly')
 const filterSymbol = require('./model/filterSymbol')
 
 const pathName = process.env.NAME
@@ -116,44 +115,15 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
     // }
     // await lineNotifyPost.postLineNotify(buyit)
 
-    const checkInit = await initmarginmonthly.findOne({ _id: 'maxmartingale' })
-    const martingale = await Martinglale?.find()
-    const logs = await Log.find()
-    const list = martingale.filter((item) => {
-      const result = logs.filter((log) => {
-        return log.symbol === item.symbol
-      })
-      return result
-    })
-    const previousMargin = list.map((item) => {
-      return item?.previousMargin
-    })
-
-    const sum =
-      previousMargin.reduce((sum, margin) => sum + margin, 0) || 'error'
-    if (!checkInit) {
-      await initmarginmonthly.create({ _id: 'maxmartingale', highest: sum })
-    } else {
-      if (checkInit.highest < sum) {
-        await initmarginmonthly.findOneAndUpdate(
-          { _id: 'maxmartingale' },
-          { highest: parseFloat(sum).toFixed(2) },
-          { upsert: true }
-        )
-      }
-    }
-    const highestMartingale = await initmarginmonthly.findOne({
-      _id: 'maxmartingale'
-    })
-    const buyit = {
-      text: 'pearson',
-      msg: `💢💢 Summary Martingale Cost Opened : ${sum?.toFixed(
-        2
-      )} $ 💢💢 \n จำนวนไม้ที่เปิด ${
-        logs?.length
-      } \n Summary Martingale Cost max : ${highestMartingale?.highest}`
-    }
-    await lineNotifyPost.postLineNotify(buyit)
+    // const buyit = {
+    //   text: 'pearson',
+    //   msg: `💢💢 Summary Martingale Cost Opened : ${sum?.toFixed(
+    //     2
+    //   )} $ 💢💢 \n จำนวนไม้ที่เปิด ${
+    //     logs?.length
+    //   } \n Summary Martingale Cost max : ${highestMartingale?.highest}`
+    // }
+    // await lineNotifyPost.postLineNotify(buyit)
 
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
@@ -195,13 +165,11 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
     let bodyq = req.body
     let body = await checkDataFirst(bodyq)
-    const FilterSymbol = await filterSymbol.find()
-    if (
-      bodyq?.version === 'EMA' &&
-      FilterSymbol.filter((item) => {
-        return item.symbol === bodyq.symbol && item.status
-      })
-    ) {
+    const FilterSymbol = await filterSymbol.findOne({
+      symbol: bodyq.symbol,
+      status: true
+    })
+    if (bodyq?.version === 'EMA' && FilterSymbol) {
       await storeStopLoss(bodyq)
       const checkStoreSL = await storesl.findOne({
         symbol: bodyq.symbol
