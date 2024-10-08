@@ -74,7 +74,7 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
     //   console.log(error) // Log errors
     // })
 
-    const checkInit = initmarginmonthly.findOne({ _id: 'maxmartingale' })
+    const checkInit = await initmarginmonthly.findOne({ _id: 'maxmartingale' })
     const martingale = await Martinglale?.find()
     const logs = await Log.find()
     const list = martingale.filter((item) => {
