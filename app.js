@@ -83,6 +83,7 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
       })
       return result
     })
+    console.log('kyu', list?.previousMargin || null)
     const sum =
       list.previousMargin.reduce((sum, margin) => sum + margin, 0) || 'error'
     buyit = {
