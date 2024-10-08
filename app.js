@@ -57,7 +57,6 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
-    const x = await Log.find()
     // const bot = new TelegramBot(token, { polling: true })
     // testTelegrame(`hello`)
     // Listen for any kind of message and respond
@@ -74,9 +73,9 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
     //   console.log(error) // Log errors
     // })
 
+    const checkInit = Initmargin.findOne({ _id: 'maxmartingale' })
     const martingale = await Martinglale?.find()
     const logs = await Log.find()
-
     const list = martingale.filter((item) => {
       const result = logs.filter((log) => {
         return log.symbol === item.symbol
@@ -89,12 +88,29 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
 
     const sum =
       previousMargin.reduce((sum, margin) => sum + margin, 0) || 'error'
+
+    if (!checkInit) {
+      Initmargin.create({ _id: 'maxmartingale', highest: sum })
+    } else {
+      if (checkInit.highest < sum) {
+        Initmargin.findOneAndUpdate(
+          { _id: 'maxmartingale' },
+          { highest: sum },
+          { upsert: true }
+        )
+      }
+    }
+    const highestMartingale = Initmargin.findOne({ _id: 'maxmartingale' })
     buyit = {
       text: 'pearson',
-      msg: `💢💢 Summary Martingale Cost Opened : ${sum?.toFixed(2)} $ 💢💢`
+      msg: `💢💢 Summary Martingale Cost Opened : ${sum?.toFixed(
+        2
+      )} $ 💢💢 \n จำนวนไม้ที่เปิด ${
+        logs?.length
+      } \n  Summary Martingale Cost max : ${highestMartingale?.highest}`
     }
+    await lineNotifyPost.postLineNotify(buyit)
 
-    console.log('this is sum', sum)
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
