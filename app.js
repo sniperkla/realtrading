@@ -90,6 +90,7 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
       msg: `💢💢 Summary Martingale Cost Opened : ${sum?.toFixed(2)} $ 💢💢`
     }
 
+    console.log('this is sum', sum)
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
