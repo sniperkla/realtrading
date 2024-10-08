@@ -92,18 +92,17 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
       previousMargin.reduce((sum, margin) => sum + margin, 0) || 'error'
 
     if (!checkInit) {
-      console.log('ur here jaa')
-      initmarginmonthly.create({ _id: 'maxmartingale', highest: sum })
+      await initmarginmonthly.create({ _id: 'maxmartingale', highest: sum })
     } else {
       if (checkInit.highest < sum) {
-        initmarginmonthly.findOneAndUpdate(
+        await initmarginmonthly.findOneAndUpdate(
           { _id: 'maxmartingale' },
           { highest: sum },
           { upsert: true }
         )
       }
     }
-    const highestMartingale = initmarginmonthly.findOne({
+    const highestMartingale = await initmarginmonthly.findOne({
       _id: 'maxmartingale'
     })
     buyit = {
