@@ -76,12 +76,15 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
 
     const martingale = await Martinglale?.find()
     const logs = await Log.find()
-    const matchingMartingale =
-      martingale?.find((item) =>
-        logs.some((log) => item.symbol === log.symbol)
-      ) || null
 
-    console.log('test jaa', matchingMartingale)
+    const list = martingale.filter((item, index) => {
+      const test = logs.filter((log) => {
+        return log.symbol === item.symbol
+      })
+      return test
+    })
+
+    console.log('test jaa', list)
     let buyit = {}
     const previousMargins =
       matchingMartingale?.map((item) => item?.previousMargin) || 0
