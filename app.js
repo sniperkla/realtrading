@@ -115,6 +115,45 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
     // }
     // await lineNotifyPost.postLineNotify(buyit)
 
+    const checkInit = await initmarginmonthly.findOne({ _id: 'maxmartingale' })
+    const martingale = await Martinglale?.find()
+    const logs = await Log.find()
+    const list = martingale.filter((item) => {
+      const result = logs.filter((log) => {
+        return log.symbol === item.symbol
+      })
+      return result
+    })
+    const previousMargin = list.map((item) => {
+      return item?.previousMargin
+    })
+
+    const sum =
+      previousMargin.reduce((sum, margin) => sum + margin, 0) || 'error'
+    if (!checkInit) {
+      await initmarginmonthly.create({ _id: 'maxmartingale', highest: sum })
+    } else {
+      if (checkInit.highest < sum) {
+        await initmarginmonthly.findOneAndUpdate(
+          { _id: 'maxmartingale' },
+          { highest: parseFloat(sum).toFixed(2) },
+          { upsert: true }
+        )
+      }
+    }
+    const highestMartingale = await initmarginmonthly.findOne({
+      _id: 'maxmartingale'
+    })
+    const buyit = {
+      text: 'pearson',
+      msg: `💢💢 Summary Martingale Cost Opened : ${sum?.toFixed(
+        2
+      )} $ 💢💢 \n จำนวนไม้ที่เปิด ${
+        logs?.length
+      } \n Summary Martingale Cost max : ${highestMartingale?.highest}`
+    }
+    await lineNotifyPost.postLineNotify(buyit)
+
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
