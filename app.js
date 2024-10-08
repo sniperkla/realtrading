@@ -26,6 +26,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 const mongoose = require('mongoose')
 const storesl = require('./model/storesl')
 const Martinglale = require('./model/martinglale')
+const initmarginmonthly = require('./model/initmarginmonthly')
 
 const pathName = process.env.NAME
 const connectionString = `${process.env.DB}` + `${pathName}`
@@ -73,7 +74,7 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
     //   console.log(error) // Log errors
     // })
 
-    const checkInit = Initmargin.findOne({ _id: 'maxmartingale' })
+    const checkInit = initmarginmonthly.findOne({ _id: 'maxmartingale' })
     const martingale = await Martinglale?.find()
     const logs = await Log.find()
     const list = martingale.filter((item) => {
