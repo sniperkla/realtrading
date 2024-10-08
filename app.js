@@ -83,9 +83,12 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
       })
       return result
     })
-    console.log('kyu', list?.previousMargin || null)
+    const previousMargin = list.map((item) => {
+      return item.previousMargin
+    })
+
     const sum =
-      list.previousMargin.reduce((sum, margin) => sum + margin, 0) || 'error'
+      previousMargin.reduce((sum, margin) => sum + margin, 0) || 'error'
     buyit = {
       text: 'pearson',
       msg: `💢💢 Summary Martingale Cost Opened : ${sum?.toFixed(2)} $ 💢💢`
