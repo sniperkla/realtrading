@@ -15,15 +15,8 @@ const cron = require('node-cron')
 const cronJub = require('./lib/cronJob')
 const linebot = require('./lib/linebot')
 const { testTelegrame } = require('./lib/telegramBot')
-
 const checkCloseOrderEMA = require('./lib/checkCloseOrderEMA')
-const checkEvery1hr = require('./lib/checkEvery1hr')
 const { storeStopLoss } = require('./lib/storeStop')
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-const TelegramBot = require('node-telegram-bot-api')
-
-// Replace 'YOUR_TELEGRAM_BOT_TOKEN' with the token from BotFather
-const token = '7459691142:AAHT3Fxr5I0nMpkdQjH4BS2l_a6-YCKU-ms'
 require('dotenv').config()
 
 app.use(cors())
@@ -33,6 +26,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 const mongoose = require('mongoose')
 const Martinglale = require('./model/martinglale')
 const storesl = require('./model/storesl')
+const Martinglale = require('./model/martinglale')
 
 const pathName = process.env.NAME
 const connectionString = `${process.env.DB}` + `${pathName}`
@@ -66,7 +60,7 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
     const x = await Log.find()
     // const bot = new TelegramBot(token, { polling: true })
-    testTelegrame(`hello`)
+    // testTelegrame(`hello`)
     // Listen for any kind of message and respond
     // bot.on('message', (msg) => {
     //   const chatId = msg.chat.id
@@ -80,6 +74,28 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
     // bot.on('polling_error', (error) => {
     //   console.log(error) // Log errors
     // })
+
+    const martingale = await Martinglale?.find()
+    const logs = await Log.find()
+    const matchingMartingale =
+      martingale?.find((item) =>
+        logs.some((log) => item.symbol === log.symbol)
+      ) || null
+
+    console.log('test jaa', matchingMartingale)
+    let buyit = {}
+    const previousMargins =
+      matchingMartingale?.map((item) => item?.previousMargin) || 0
+    const totalPreviousMargin =
+      previousMargins.reduce((sum, margin) => sum + margin, 0) || 0
+    buyit = {
+      text: 'pearson',
+      msg: `💢💢 Summary Martingale Cost Opened : ${totalPreviousMargin?.toFixed(
+        2
+      )} $ 💢💢`
+    }
+    await lineNotifyPost.postLineNotify(buyit)
+
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
