@@ -27,6 +27,7 @@ const mongoose = require('mongoose')
 const storesl = require('./model/storesl')
 const Martinglale = require('./model/martinglale')
 const initmarginmonthly = require('./model/initmarginmonthly')
+const filterSymbol = require('./model/filterSymbol')
 
 const pathName = process.env.NAME
 const connectionString = `${process.env.DB}` + `${pathName}`
@@ -194,7 +195,13 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
     let bodyq = req.body
     let body = await checkDataFirst(bodyq)
-    if (bodyq?.version === 'EMA') {
+    const FilterSymbol = await filterSymbol.find()
+    if (
+      bodyq?.version === 'EMA' &&
+      FilterSymbol.filter((item) => {
+        return item.symbol === bodyq.symbol && item.status
+      })
+    ) {
       await storeStopLoss(bodyq)
       const checkStoreSL = await storesl.findOne({
         symbol: bodyq.symbol
