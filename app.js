@@ -24,7 +24,6 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
 const mongoose = require('mongoose')
-const Martinglale = require('./model/martinglale')
 const storesl = require('./model/storesl')
 const Martinglale = require('./model/martinglale')
 
