@@ -90,6 +90,7 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
     const sum =
       previousMargin.reduce((sum, margin) => sum + margin, 0) || 'error'
 
+    console.log('sum sum', sum)
     if (!checkInit) {
       Initmargin.create({ _id: 'maxmartingale', highest: sum })
     } else {
