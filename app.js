@@ -77,26 +77,18 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
     const martingale = await Martinglale?.find()
     const logs = await Log.find()
 
-    const list = martingale.filter((item, index) => {
-      const test = logs.filter((log) => {
+    const list = martingale.filter((item) => {
+      const result = logs.filter((log) => {
         return log.symbol === item.symbol
       })
-      return test
+      return result
     })
-
-    console.log('test jaa', list)
-    let buyit = {}
-    const previousMargins =
-      matchingMartingale?.map((item) => item?.previousMargin) || 0
-    const totalPreviousMargin =
-      previousMargins.reduce((sum, margin) => sum + margin, 0) || 0
+    const sum =
+      list.previousMargin.reduce((sum, margin) => sum + margin, 0) || 'error'
     buyit = {
       text: 'pearson',
-      msg: `💢💢 Summary Martingale Cost Opened : ${totalPreviousMargin?.toFixed(
-        2
-      )} $ 💢💢`
+      msg: `💢💢 Summary Martingale Cost Opened : ${sum?.toFixed(2)} $ 💢💢`
     }
-    await lineNotifyPost.postLineNotify(buyit)
 
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
