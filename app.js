@@ -27,6 +27,7 @@ const mongoose = require('mongoose')
 const storesl = require('./model/storesl')
 const Martinglale = require('./model/martinglale')
 const filterSymbol = require('./model/filterSymbol')
+const log = require('./model/log')
 
 const pathName = process.env.NAME
 const connectionString = `${process.env.DB}` + `${pathName}`
@@ -165,6 +166,12 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
     let bodyq = req.body
     let body = await checkDataFirst(bodyq)
+    const CheckFilterSymbol = await filterSymbol.findOne({
+      symbol: bodyq.symbol
+    })
+    if (!CheckFilterSymbol) {
+      await filterSymbol.create({ symbol: bodyq.symbol, status: false })
+    }
     const FilterSymbol = await filterSymbol.findOne({
       symbol: bodyq.symbol,
       status: true
