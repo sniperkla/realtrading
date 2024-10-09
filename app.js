@@ -14,7 +14,7 @@ const combine = require('./lib/combineUser')
 const cron = require('node-cron')
 const cronJub = require('./lib/cronJob')
 const linebot = require('./lib/linebot')
-const { testTelegrame } = require('./lib/telegramBot')
+// const { testTelegrame } = require('./lib/telegramBot')
 const checkCloseOrderEMA = require('./lib/checkCloseOrderEMA')
 const { storeStopLoss } = require('./lib/storeStop')
 require('dotenv').config()
@@ -222,7 +222,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
             text: 'initsmcp',
             msg: `💎 มีการสั่งซื้อ Market ${body.symbol}`
           }
-          await testTelegrame(buyit.msg)
+          // await testTelegrame(buyit.msg)
           await lineNotifyPost.postLineNotify(buyit)
           await mainCalLeverage(body, margin)
         }
