@@ -164,12 +164,14 @@ task4.start()
 app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
     let bodyq = req.body
+    console.log('bodyq', bodyq)
     let body = await checkDataFirst(bodyq)
     const FilterSymbol = await filterSymbol.findOne({
       symbol: bodyq.symbol,
       status: true
     })
     if (bodyq?.version === 'EMA' && FilterSymbol) {
+      console.log('u r here mm')
       await storeStopLoss(bodyq)
       const checkStoreSL = await storesl.findOne({
         symbol: bodyq.symbol
