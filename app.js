@@ -14,7 +14,7 @@ const combine = require('./lib/combineUser')
 const cron = require('node-cron')
 const cronJub = require('./lib/cronJob')
 const linebot = require('./lib/linebot')
-const { testTelegrame } = require('./lib/telegramBot')
+// const { testTelegrame } = require('./lib/telegramBot')
 const checkCloseOrderEMA = require('./lib/checkCloseOrderEMA')
 const { storeStopLoss } = require('./lib/storeStop')
 require('dotenv').config()
@@ -164,18 +164,13 @@ task4.start()
 app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
     let bodyq = req.body
-    console.log('bodyq', bodyq)
     let body = await checkDataFirst(bodyq)
     const FilterSymbol = await filterSymbol.findOne({
       symbol: bodyq.symbol,
       status: true
     })
+    await storeStopLoss(bodyq) // store stoploss for all symbol first
     if (bodyq?.version === 'EMA' && FilterSymbol) {
-      console.log('u r here mm')
-      await storeStopLoss(bodyq)
-      const checkStoreSL = await storesl.findOne({
-        symbol: bodyq.symbol
-      })
       if (bodyq?.type === 'MARKET') {
         await checkCloseOrderEMA.checekOrderEMA(
           body,
@@ -199,7 +194,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
             text: 'initsmcp',
             msg: `💎 มีการสั่งซื้อ Market ${body.symbol}`
           }
-          await testTelegrame(buyit.msg)
+          // await testTelegrame(buyit.msg)
           await lineNotifyPost.postLineNotify(buyit)
           await mainCalLeverage(body, margin)
         }
