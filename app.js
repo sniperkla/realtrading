@@ -210,7 +210,6 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
         text: 'debug',
         msg: `${JSON.stringify(bodyq)}`
       }
-
       await lineNotifyPost.postLineNotify(buyit)
     }
     return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
