@@ -1,7 +1,7 @@
 const express = require('express')
 const HTTPStatus = require('http-status')
 const app = express()
-const port = 3092
+const port = 3091
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const Trading = require('./model/trading')
@@ -26,8 +26,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 const mongoose = require('mongoose')
 const storesl = require('./model/storesl')
 const Martinglale = require('./model/martinglale')
-const filterSymbol = require('./model/filterSymbol')
-const log = require('./model/log')
+const initmarginmonthly = require('./model/initmarginmonthly')
 
 const pathName = process.env.NAME
 const connectionString = `${process.env.DB}` + `${pathName}`
@@ -116,15 +115,44 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
     // }
     // await lineNotifyPost.postLineNotify(buyit)
 
-    // const buyit = {
-    //   text: 'pearson',
-    //   msg: `💢💢 Summary Martingale Cost Opened : ${sum?.toFixed(
-    //     2
-    //   )} $ 💢💢 \n จำนวนไม้ที่เปิด ${
-    //     logs?.length
-    //   } \n Summary Martingale Cost max : ${highestMartingale?.highest}`
-    // }
-    // await lineNotifyPost.postLineNotify(buyit)
+    const checkInit = await initmarginmonthly.findOne({ _id: 'maxmartingale' })
+    const martingale = await Martinglale?.find()
+    const logs = await Log.find()
+    const list = martingale.filter((item) => {
+      const result = logs.filter((log) => {
+        return log.symbol === item.symbol
+      })
+      return result
+    })
+    const previousMargin = list.map((item) => {
+      return item?.previousMargin
+    })
+
+    const sum =
+      previousMargin.reduce((sum, margin) => sum + margin, 0) || 'error'
+    if (!checkInit) {
+      await initmarginmonthly.create({ _id: 'maxmartingale', highest: sum })
+    } else {
+      if (checkInit.highest < sum) {
+        await initmarginmonthly.findOneAndUpdate(
+          { _id: 'maxmartingale' },
+          { highest: parseFloat(sum).toFixed(2) },
+          { upsert: true }
+        )
+      }
+    }
+    const highestMartingale = await initmarginmonthly.findOne({
+      _id: 'maxmartingale'
+    })
+    const buyit = {
+      text: 'pearson',
+      msg: `💢💢 Summary Martingale Cost Opened : ${sum?.toFixed(
+        2
+      )} $ 💢💢 \n จำนวนไม้ที่เปิด ${
+        logs?.length
+      } \n Summary Martingale Cost max : ${highestMartingale?.highest}`
+    }
+    await lineNotifyPost.postLineNotify(buyit)
 
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
@@ -166,18 +194,11 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
     let bodyq = req.body
     let body = await checkDataFirst(bodyq)
-    const CheckFilterSymbol = await filterSymbol.findOne({
-      symbol: bodyq.symbol
-    })
-    if (!CheckFilterSymbol) {
-      await filterSymbol.create({ symbol: bodyq.symbol, status: false })
-    }
-    const FilterSymbol = await filterSymbol.findOne({
-      symbol: bodyq.symbol,
-      status: true
-    })
-    await storeStopLoss(bodyq) // store stoploss for all symbol first
-    if (bodyq?.version === 'EMA' && FilterSymbol) {
+    if (bodyq?.version === 'EMA') {
+      await storeStopLoss(bodyq)
+      const checkStoreSL = await storesl.findOne({
+        symbol: bodyq.symbol
+      })
       if (bodyq?.type === 'MARKET') {
         await checkCloseOrderEMA.checekOrderEMA(
           body,
@@ -210,6 +231,7 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
         text: 'debug',
         msg: `${JSON.stringify(bodyq)}`
       }
+
       await lineNotifyPost.postLineNotify(buyit)
     }
     return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
