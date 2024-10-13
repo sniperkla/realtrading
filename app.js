@@ -124,7 +124,7 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
     let task1 = 0
     let daily = 0
     task1 = check?.value - marginBalance
-    daily = (task1 / marginStartday?.value) * 100
+    daily = (task1 / check?.value) * 100
     const find = await initmarginmonthly.findOneAndUpdate(
       {
         _id: 'marginstartday'
