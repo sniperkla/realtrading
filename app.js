@@ -126,6 +126,8 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
     task1 = check?.value - marginBalance
     daily = (task1 / check?.value) * 100
     console.log('this is margin', marginBalance)
+    console.log('this is daily', daily)
+
     const find = await initmarginmonthly.findOneAndUpdate(
       {
         _id: 'marginstartday'
@@ -133,14 +135,12 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
       {
         value: marginBalance,
         margin: daily,
-        highest: daily > check?.margin ?? daily 
+        highest: daily > check?.margin ?? daily
       }
     )
 
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
-  } catch (error) {
-    console.log(error)
-  }
+  } catch (error) {}
 })
 
 const scheduleForakeProfit4Step = '*/37 * * * * *'
