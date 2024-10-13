@@ -135,7 +135,7 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
       {
         value: marginBalance,
         margin: daily,
-        highest: daily > check?.margin ?? daily
+        highest: daily > check?.margin ?? 2111
       }
     )
 
