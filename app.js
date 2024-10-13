@@ -120,7 +120,7 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
       get.SECRET_KEY[0]
     )
     const marginBalance = getAccountInfo?.totalMarginBalance || 'error'
-    const check = await initmarginmonthly.findOne({ id: 'marginstartday' })
+    const check = await initmarginmonthly.findOne({ _id: 'marginstartday' })
     let task1 = 0
     let daily = 0
     task1 = check?.value - marginBalance
