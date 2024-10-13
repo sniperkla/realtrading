@@ -137,7 +137,9 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
     )
 
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
-  } catch (error) {}
+  } catch (error) {
+    console.log(error)
+  }
 })
 
 const scheduleForakeProfit4Step = '*/37 * * * * *'
