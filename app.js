@@ -312,97 +312,106 @@ const checkCondition = async (
   } catch (error) {}
 }
 
-const checkStopLoss = async (body) => {
-  try {
-    const { symbol, side, type, stopPrice } = body
+// const checkStopLoss = async (body) => {
+//   try {
+//     const { symbol, side, type, stopPrice } = body
 
-    const qty = 0
-    const status = true
-    // check order first
-    const checkMarket = await Log.findOne({
-      symbol: symbol
-    })
+//     const qty = 0
+//     const status = true
+//     // check order first
+//     const checkMarket = await Log.findOne({
+//       symbol: symbol
+//     })
 
-    const check = await Log.findOne({
-      symbol: symbol,
-      'binanceStopLoss.symbol': symbol
-    })
+//     const check = await Log.findOne({
+//       symbol: symbol,
+//       'binanceStopLoss.symbol': symbol
+//     })
 
-    if (check) {
-      const data = await apiBinance.postBinannce(
-        symbol,
-        side,
-        qty,
-        type,
-        stopPrice,
-        status,
-        'takeprofit',
-        get.API_KEY[0],
-        get.SECRET_KEY[0]
-      )
+//     if (check) {
+//       const data = await apiBinance.postBinannce(
+//         symbol,
+//         side,
+//         qty,
+//         type,
+//         stopPrice,
+//         status,
+//         'takeprofit',
+//         get.API_KEY[0],
+//         get.SECRET_KEY[0]
+//       )
 
-      if (data.status === 200) {
-        await apiBinance.cancleOrder(
-          symbol,
-          check.binanceStopLoss.orderId,
-          get.API_KEY[0],
-          get.SECRET_KEY[0]
-        )
-        await Log.findOneAndUpdate(
-          { symbol: symbol },
-          {
-            $set: { binanceStopLoss: data.data }
-          },
-          { upsert: true }
-        )
-        const updated = await Log.updateOne(
-          { symbol: symbol },
-          { $set: { binanceStopLoss: data.data } }
-        )
-        const getAccountInfo = await apiBinance.getAccountInfo(
-          get.API_KEY[0],
-          get.SECRET_KEY[0]
-        )
-        const unPNL = getAccountInfo?.totalUnrealizedProfit || 'error'
-        const margin = getAccountInfo?.totalMarginBalance || 'error'
-        const buyit = {
-          symbol: symbol,
-          text: 'updatestoploss',
-          type: type,
-          msg: `✅ ${symbol} : อัพเดท stoploss สำเร็จ \n🟡 เลื่อน stopLoss : ${stopPrice} \n💰 คงเหลือ :${margin} 💸 กำไรทิพย์ : ${unPNL}`
-        }
-        await lineNotifyPost.postLineNotify(buyit)
-      }
-    } else if (checkMarket !== null && check === null) {
-      const data = await apiBinance.postBinannce(
-        symbol,
-        side,
-        qty,
-        type,
-        stopPrice,
-        status,
-        'takeprofit',
-        get.API_KEY[0],
-        get.SECRET_KEY[0]
-      )
+//       if (data.status === 200) {
+//         await apiBinance.cancleOrder(
+//           symbol,
+//           check.binanceStopLoss.orderId,
+//           get.API_KEY[0],
+//           get.SECRET_KEY[0]
+//         )
+//         await Log.findOneAndUpdate(
+//           { symbol: symbol },
+//           {
+//             $set: {
+//               binanceStopLoss: {
+//                 ...data.data,
+//                 orderId: data.data.orderId.toString()
+//               }
+//             }
+//           },
+//           { upsert: true }
+//         )
 
-      if (data.status === 200) {
-        const updated = await Log.updateOne(
-          { symbol: symbol },
-          { $set: { binanceStopLoss: data.data } }
-        )
+//         const getAccountInfo = await apiBinance.getAccountInfo(
+//           get.API_KEY[0],
+//           get.SECRET_KEY[0]
+//         )
+//         const unPNL = getAccountInfo?.totalUnrealizedProfit || 'error'
+//         const margin = getAccountInfo?.totalMarginBalance || 'error'
+//         const buyit = {
+//           symbol: symbol,
+//           text: 'updatestoploss',
+//           type: type,
+//           msg: `✅ ${symbol} : อัพเดท stoploss สำเร็จ \n🟡 เลื่อน stopLoss : ${stopPrice} \n💰 คงเหลือ :${margin} 💸 กำไรทิพย์ : ${unPNL}`
+//         }
+//         await lineNotifyPost.postLineNotify(buyit)
+//       }
+//     } else if (checkMarket !== null && check === null) {
+//       const data = await apiBinance.postBinannce(
+//         symbol,
+//         side,
+//         qty,
+//         type,
+//         stopPrice,
+//         status,
+//         'takeprofit',
+//         get.API_KEY[0],
+//         get.SECRET_KEY[0]
+//       )
 
-        const buyit = {
-          symbol: symbol,
-          text: 'updatestoploss',
-          type: type,
-          msg: `${symbol} : อัพเดท stoploss สำเร็จ , เลื่อน : ${stopPrice}`
-        }
-        await lineNotifyPost.postLineNotify(buyit)
-      }
-    }
-  } catch (error) {}
-}
+//       if (data.status === 200) {
+//         const updated = await Log.findOneAndUpdate(
+//           { symbol: symbol },
+//           {
+//             $set: {
+//               binanceStopLoss: {
+//                 ...data.data,
+//                 orderId: data.data.orderId.toString()
+//               }
+//             }
+//           }
+//         )
+
+//         const buyit = {
+//           symbol: symbol,
+//           text: 'updatestoploss',
+//           type: type,
+//           msg: `${symbol} : อัพเดท stoploss สำเร็จ , เลื่อน : ${stopPrice}`
+//         }
+//         await lineNotifyPost.postLineNotify(buyit)
+//       }
+//     }
+//   } catch (error) {}
+// }
 
 const checkMarketBody = (body) => {
   let real = {}
@@ -429,19 +438,19 @@ const checkMarketBody = (body) => {
   return real
 }
 
-const checkStopLossBody = (bodyq) => {
-  let real = {}
+// const checkStopLossBody = (bodyq) => {
+//   let real = {}
 
-  real = {
-    type: bodyq.type,
-    side: bodyq.side,
-    symbol: bodyq.symbol,
-    price: parseFloat(bodyq.price),
-    stopPrice: parseFloat(bodyq.stopPrice)
-  }
+//   real = {
+//     type: bodyq.type,
+//     side: bodyq.side,
+//     symbol: bodyq.symbol,
+//     price: parseFloat(bodyq.price),
+//     stopPrice: parseFloat(bodyq.stopPrice)
+//   }
 
-  return real
-}
+//   return real
+// }
 
 const checkDataFirst = async (bodyq) => {
   if (bodyq.type === 'MARKET') {
