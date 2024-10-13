@@ -143,7 +143,6 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
           },
           {
             value: marginBalance,
-            margin: daily,
             highest: daily
           }
         )
@@ -152,8 +151,7 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
             _id: 'marginstartday'
           },
           {
-            value: marginBalance,
-            margin: daily
+            value: marginBalance
           }
         )
 
