@@ -128,6 +128,10 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
     console.log('this is margin', check?.margin)
     console.log('this is daily', daily)
 
+    if (daily > check?.margin) {
+      console.log('daily > checkmargin')
+    } else console.log('daily < checkmargin')
+
     const find = await initmarginmonthly.findOneAndUpdate(
       {
         _id: 'marginstartday'
