@@ -194,6 +194,16 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
             stackLose: 1,
             previousMargin: margin
           })
+        } else if (martingale?.previousMargin < margin) {
+          await Martinglale.findOneAndUpdate(
+            {
+              symbol: body.symbol
+            },
+            {
+              previousMargin: margin
+            },
+            { upsert: true }
+          )
         }
         if (!data) {
           const buyit = {
