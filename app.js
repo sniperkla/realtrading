@@ -148,7 +148,7 @@ const task1 = cron.schedule(scheduleForakeProfit4Step, doCheckTakeProfit4Step)
 const task2 = cron.schedule(scheduleForcheckProfit, doCheckMargin)
 const task3 = cron.schedule(scheduleForStartDay, doStartDay)
 const task4 = cron.schedule(schedule1hr, doStart1hrPayload)
-const task5 = cron.schedule(scheduleForSetting, doCheckSetting)
+// const task5 = cron.schedule(scheduleForSetting, doCheckSetting)
 
 task1.start()
 task2.start()
