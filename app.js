@@ -7,7 +7,6 @@ const bodyParser = require('body-parser')
 const Trading = require('./model/trading')
 const Setting = require('./model/setting')
 
-
 const Log = require('./model/log')
 const lineNotifyPost = require('./lib/lineNotifyPost')
 const apiBinance = require('./lib/apibinance')
@@ -48,7 +47,6 @@ mongoose
 app.post(`/sellall_${pathName}`, async (req, res) => {
   try {
     const body = req.body
-
     return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
   } catch (error) {}
 })
@@ -129,7 +127,7 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
     //   } \n Summary Martingale Cost max : ${highestMartingale?.highest}`
     // }
     // await lineNotifyPost.postLineNotify(buyit)
-
+    await cronJub.everyStartDay(get.API_KEY[0], get.SECRET_KEY[0])
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
