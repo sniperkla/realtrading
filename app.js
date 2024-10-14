@@ -5,6 +5,9 @@ const port = 3092
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const Trading = require('./model/trading')
+const Setting = require('./model/setting')
+
+
 const Log = require('./model/log')
 const lineNotifyPost = require('./lib/lineNotifyPost')
 const apiBinance = require('./lib/apibinance')
@@ -133,6 +136,7 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
 
 const scheduleForakeProfit4Step = '*/37 * * * * *'
 const scheduleForcheckProfit = '*/20 * * * * *'
+const scheduleForSetting = '*/15 * * * * *'
 const scheduleForStartDay = '0 0 * * *'
 const schedule1hr = '0 * * * *'
 const doCheckTakeProfit4Step = async () => {
@@ -157,12 +161,14 @@ const task1 = cron.schedule(scheduleForakeProfit4Step, doCheckTakeProfit4Step)
 const task2 = cron.schedule(scheduleForcheckProfit, doCheckMargin)
 const task3 = cron.schedule(scheduleForStartDay, doStartDay)
 const task4 = cron.schedule(schedule1hr, doStart1hrPayload)
+// const task5 = cron.schedule(scheduleForSetting, doCheckSetting)
 
 task1.start()
 task2.start()
 task3.start()
 task4.start()
-
+// const checkSetting = await Setting.findOne({_id : })
+//  task5.start()
 app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
     let bodyq = req.body
