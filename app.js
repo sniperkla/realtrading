@@ -115,34 +115,6 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
     // }
     // await lineNotifyPost.postLineNotify(buyit)
 
-    const getAccountInfo = await apiBinance.getAccountInfo(
-      get.API_KEY[0],
-      get.SECRET_KEY[0]
-    )
-    const marginBalance = getAccountInfo?.totalMarginBalance || 'error'
-    const check = await initmarginmonthly.findOne({ _id: 'marginstartday' })
-    let task1 = 0
-    let daily = 0
-    task1 = check?.value - marginBalance
-    daily = (task1 / check?.value) * 100
-    console.log('this is margin', check?.margin)
-    console.log('this is daily', daily)
-
-    if (daily > check?.margin) {
-      console.log('daily > checkmargin')
-    } else console.log('daily < checkmargin')
-
-    const find = await initmarginmonthly.findOneAndUpdate(
-      {
-        _id: 'marginstartday'
-      },
-      {
-        value: marginBalance,
-        margin: daily,
-        highest: daily > check?.margin && daily
-      }
-    )
-
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
