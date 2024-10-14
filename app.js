@@ -7,6 +7,7 @@ const bodyParser = require('body-parser')
 const Trading = require('./model/trading')
 const Setting = require('./model/setting')
 
+
 const Log = require('./model/log')
 const lineNotifyPost = require('./lib/lineNotifyPost')
 const apiBinance = require('./lib/apibinance')
@@ -28,6 +29,8 @@ app.use(bodyParser.urlencoded({ extended: false }))
 const mongoose = require('mongoose')
 const storesl = require('./model/storesl')
 const Martinglale = require('./model/martinglale')
+const filterSymbol = require('./model/filterSymbol')
+const log = require('./model/log')
 const initmarginmonthly = require('./model/initmarginmonthly')
 
 const pathName = process.env.NAME
@@ -117,6 +120,16 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
     // }
     // await lineNotifyPost.postLineNotify(buyit)
 
+    // const buyit = {
+    //   text: 'pearson',
+    //   msg: `💢💢 Summary Martingale Cost Opened : ${sum?.toFixed(
+    //     2
+    //   )} $ 💢💢 \n จำนวนไม้ที่เปิด ${
+    //     logs?.length
+    //   } \n Summary Martingale Cost max : ${highestMartingale?.highest}`
+    // }
+    // await lineNotifyPost.postLineNotify(buyit)
+
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })
@@ -154,19 +167,24 @@ task1.start()
 task2.start()
 task3.start()
 task4.start()
-
 // const checkSetting = await Setting.findOne({_id : })
 //  task5.start()
-
 app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
     let bodyq = req.body
     let body = await checkDataFirst(bodyq)
-    if (bodyq?.version === 'EMA') {
-      await storeStopLoss(bodyq)
-      const checkStoreSL = await storesl.findOne({
-        symbol: bodyq.symbol
-      })
+    const CheckFilterSymbol = await filterSymbol.findOne({
+      symbol: bodyq.symbol
+    })
+    if (!CheckFilterSymbol) {
+      await filterSymbol.create({ symbol: bodyq.symbol, status: false })
+    }
+    const FilterSymbol = await filterSymbol.findOne({
+      symbol: bodyq.symbol,
+      status: true
+    })
+    await storeStopLoss(bodyq) // store stoploss for all symbol first
+    if (bodyq?.version === 'EMA' && FilterSymbol) {
       if (bodyq?.type === 'MARKET') {
         await checkCloseOrderEMA.checekOrderEMA(
           body,
@@ -209,7 +227,6 @@ app.post(`/gettrading_${pathName}`, async (req, res) => {
         text: 'debug',
         msg: `${JSON.stringify(bodyq)}`
       }
-
       await lineNotifyPost.postLineNotify(buyit)
     }
     return res.status(HTTPStatus.OK).json({ success: true, data: 'ok' })
