@@ -5,7 +5,7 @@ const Setting = new Schema(
   {
     _id: { type: String },
     value: { type: Number },
-    status: { type: String }
+    status: { type: Boolean }
   },
   {
     timestamps: true
