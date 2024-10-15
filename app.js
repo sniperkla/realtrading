@@ -61,6 +61,7 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
+    // await cronJub.settingTask()
     // const bot = new TelegramBot(token, { polling: true })
     // testTelegrame(`hello`)
     // Listen for any kind of message and respond
@@ -154,21 +155,21 @@ const doStartDay = async () => {
 const doStart1hrPayload = async () => {
   await cronJub.every1hrPayload()
 }
-// const doCheckSetting = async () => {
-//   await cronJub.settingTask()
-// }
+const doCheckSetting = async () => {
+  await cronJub.settingTask()
+}
 
 const task1 = cron.schedule(scheduleForakeProfit4Step, doCheckTakeProfit4Step)
 const task2 = cron.schedule(scheduleForcheckProfit, doCheckMargin)
 const task3 = cron.schedule(scheduleForStartDay, doStartDay)
 const task4 = cron.schedule(schedule1hr, doStart1hrPayload)
-// const task5 = cron.schedule(scheduleForSetting, doCheckSetting)
+const task5 = cron.schedule(scheduleForSetting, doCheckSetting)
 
 task1.start()
 task2.start()
 task3.start()
 task4.start()
-// task5.start()
+task5.start()
 
 app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
