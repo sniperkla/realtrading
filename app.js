@@ -1,7 +1,7 @@
 const express = require('express')
 const HTTPStatus = require('http-status')
 const app = express()
-const port = 3091
+const port = 3092
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const Trading = require('./model/trading')
@@ -146,7 +146,7 @@ const doCheckMargin = async () => {
 const doStartDay = async () => {
   const buyit = {
     text: 'initsmcp',
-    msg: `💎 test every 24 hr`
+    msg: `💎 24 hr`
   }
   await lineNotifyPost.postLineNotify(buyit)
   await cronJub.everyStartDay(get.API_KEY[0], get.SECRET_KEY[0])
@@ -154,6 +154,9 @@ const doStartDay = async () => {
 const doStart1hrPayload = async () => {
   await cronJub.every1hrPayload()
 }
+// const doCheckSetting = async () => {
+//   await cronJub.settingTask()
+// }
 
 const task1 = cron.schedule(scheduleForakeProfit4Step, doCheckTakeProfit4Step)
 const task2 = cron.schedule(scheduleForcheckProfit, doCheckMargin)
@@ -165,8 +168,8 @@ task1.start()
 task2.start()
 task3.start()
 task4.start()
-// const checkSetting = await Setting.findOne({_id : })
-//  task5.start()
+// task5.start()
+
 app.post(`/gettrading_${pathName}`, async (req, res) => {
   try {
     let bodyq = req.body
