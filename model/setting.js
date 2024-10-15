@@ -7,7 +7,8 @@ const Setting = new Schema(
     value: { type: Number },
     status: { type: Boolean },
     start: { type: Number },
-    end: { type: Number }
+    end: { type: Number },
+    executed: { type: Boolean }
   },
   {
     timestamps: true
