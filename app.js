@@ -31,6 +31,7 @@ const Martinglale = require('./model/martinglale')
 const filterSymbol = require('./model/filterSymbol')
 const log = require('./model/log')
 const initmarginmonthly = require('./model/initmarginmonthly')
+const martinglale = require('./model/martinglale')
 
 const pathName = process.env.NAME
 const connectionString = `${process.env.DB}` + `${pathName}`
