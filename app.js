@@ -154,7 +154,7 @@ const doStartDay = async () => {
   await cronJub.everyStartDay(get.API_KEY[0], get.SECRET_KEY[0])
 }
 const doStart1hrPayload = async () => {
-  await cronJub.every1hrPayload()
+  await cronJub.every1hrPayload('main')
 }
 const doCheckSetting = async () => {
   await cronJub.settingTask()
