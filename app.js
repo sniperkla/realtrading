@@ -62,6 +62,27 @@ app.post(`/bot_${pathName}`, async (req, res) => {
 
 app.get(`/getbinance_${pathName}`, async (req, res) => {
   try {
+    // const martingale = await martinglale?.find()
+    // const test = 'all'
+    // const logs = await Log.find()
+
+    // const list =
+    //   test === 'opened'
+    //     ? martingale.filter((martingaleItem) => {
+    //         const matchingLog = logs.find(
+    //           (logItem) => logItem.symbol === martingaleItem.symbol
+    //         )
+    //         return matchingLog !== undefined
+    //       })
+    //     : martingale
+    // const previousMargin = list.map((item) => {
+    //   return item?.previousMargin
+    // })
+    // const sumMartingale =
+    //   previousMargin.reduce((sum, margin) => sum + margin, 0) || 'error'
+
+    // console.log('sumMartingale', sumMartingale)
+
     // await cronJub.settingTask()
     // const bot = new TelegramBot(token, { polling: true })
     // testTelegrame(`hello`)
@@ -129,7 +150,7 @@ app.get(`/getbinance_${pathName}`, async (req, res) => {
     //   } \n Summary Martingale Cost max : ${highestMartingale?.highest}`
     // }
     // await lineNotifyPost.postLineNotify(buyit)
-    await cronJub.everyStartDay(get.API_KEY[0], get.SECRET_KEY[0])
+    // await cronJub.everyStartDay(get.API_KEY[0], get.SECRET_KEY[0])
     return res.status(HTTPStatus.OK).json({ success: true, data: Date.now() })
   } catch (error) {}
 })

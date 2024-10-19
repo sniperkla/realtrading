@@ -8,7 +8,9 @@ const Setting = new Schema(
     status: { type: Boolean },
     start: { type: Number },
     end: { type: Number },
-    executed: { type: Boolean }
+    executed: { type: Boolean },
+    multiply: { type: Number },
+    type: { type: String }
   },
   {
     timestamps: true
