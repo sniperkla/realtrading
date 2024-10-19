@@ -6,7 +6,9 @@ const initMargin = new Schema(
     _id: { type: String },
     value: { type: Number, default: 0 },
     highest: { type: Number, default: 0 },
-    margin: { type: Number, default: 0 }
+    margin: { type: Number, default: 0 },
+    cum: { type: Number, default: 0 },
+    highestcum: { type: Number, default: 0 }
   },
   {
     timestamps: true
